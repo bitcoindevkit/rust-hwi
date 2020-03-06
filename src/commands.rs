@@ -17,7 +17,7 @@ pub enum HWISubcommand {
     Restore,
     Backup,
     PromptPin,
-    SendPin
+    SendPin,
 }
 
 #[derive(Debug)]
@@ -38,11 +38,11 @@ pub enum HWIFlag {
 impl HWIFlag {
     fn to_args_vec(&self) -> Vec<String> {
         match self {
-            HWIFlag::DevicePath(p) => vec!(String::from("--device-path"), format!("{}", p)),
-            HWIFlag::DeviceType(t) => vec!(String::from("--device-type"), format!("{}", t)),
-            HWIFlag::Password(p) => vec!(String::from("--password"), format!("{}", p)),
-            HWIFlag::Fingerprint(f) => vec!(String::from("--fingerprint"), format!("{}", f)),
-            _ => vec!(format!("--{:?}", self).to_lowercase()),
+            HWIFlag::DevicePath(p) => vec![String::from("--device-path"), format!("{}", p)],
+            HWIFlag::DeviceType(t) => vec![String::from("--device-type"), format!("{}", t)],
+            HWIFlag::Password(p) => vec![String::from("--password"), format!("{}", p)],
+            HWIFlag::Fingerprint(f) => vec![String::from("--fingerprint"), format!("{}", f)],
+            _ => vec![format!("--{:?}", self).to_lowercase()],
         }
     }
 }
@@ -55,7 +55,7 @@ pub struct HWICommand {
 impl HWICommand {
     pub fn new() -> Self {
         HWICommand {
-            command: Command::new("hwi")
+            command: Command::new("hwi"),
         }
     }
 
@@ -76,7 +76,8 @@ impl HWICommand {
 
     // TODO: maybe deserialize here?
     pub fn execute(&mut self) -> Output {
-        println!("{:?}", self.command);
-        self.command.output().expect("Failed to call HWI. Do you have it installed?")
+        self.command
+            .output()
+            .expect("Failed to call HWI. Do you have it installed?")
     }
 }
