@@ -5,9 +5,9 @@ extern crate strum_macros;
 #[macro_use]
 extern crate serial_test;
 
-pub mod types;
 pub mod commands;
 pub mod interface;
+pub mod types;
 
 #[cfg(test)]
 mod tests {
@@ -40,8 +40,20 @@ mod tests {
     #[serial]
     fn getxpub() {
         let device = get_device();
-        let derivation_path = DerivationPath::from(vec!(ChildNumber::from_hardened_idx(44).unwrap(), ChildNumber::from_normal_idx(0).unwrap()));
+        let derivation_path = DerivationPath::from(vec![
+            ChildNumber::from_hardened_idx(44).unwrap(),
+            ChildNumber::from_normal_idx(0).unwrap(),
+        ]);
         let pb = interface::getxpub(&device, &derivation_path);
         assert!(pb.contains_key("xpub"));
+    }
+
+    #[test]
+    #[serial]
+    fn getdescriptors() {
+        let device = get_device();
+        let descriptor = interface::getdescriptors(&device);
+        assert!(descriptor.internal.len() > 0);
+        assert!(descriptor.receive.len() > 0);
     }
 }
