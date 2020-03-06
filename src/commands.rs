@@ -69,8 +69,15 @@ impl HWICommand {
         self
     }
 
+    // FIXME: maybe merge path and message?
     pub fn add_path(&mut self, p: &DerivationPath) -> &mut Self {
         self.command.arg(p.to_string());
+        self
+    }
+
+    // Command escapes m, preventing injections
+    pub fn add_message(&mut self, m: &str) -> &mut Self {
+        self.command.arg(m);
         self
     }
 

@@ -1,4 +1,4 @@
-use bitcoin::util::bip32::Fingerprint;
+use bitcoin::util::bip32::{ExtendedPubKey, Fingerprint};
 
 use serde::{Deserialize, Serialize};
 
@@ -11,6 +11,17 @@ pub struct HWIDevice {
     pub needs_pin_sent: bool,
     pub needs_passphrase_sent: bool,
     pub fingerprint: Fingerprint,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct HWIExtendedPubKey {
+    pub xpub: ExtendedPubKey,
+}
+
+// TODO: is signature a String?
+#[derive(Serialize, Deserialize)]
+pub struct HWISignature {
+    pub signature: String,
 }
 
 // TODO: use Descriptors
