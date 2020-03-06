@@ -1,10 +1,14 @@
 use bitcoin::util::bip32::Fingerprint;
 
-pub struct Device {
-    device_type: String,
-    model: String,
-    path: String,
-    needs_pin_sent: bool,
-    need_passphrase_sent: bool,
-    fingerprint: Fingerprint
+use serde::{Deserialize, Serialize};
+
+#[derive(Clone, Serialize, Deserialize)]
+pub struct HWIDevice {
+    #[serde(rename(deserialize = "type"))]
+    pub device_type: String,
+    pub model: String,
+    pub path: String,
+    pub needs_pin_sent: bool,
+    pub needs_passphrase_sent: bool,
+    pub fingerprint: Fingerprint
 }

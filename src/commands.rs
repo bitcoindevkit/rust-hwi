@@ -1,7 +1,6 @@
-use bitcoin::util::bip32::Fingerprint;
+use std::process::{Command, Output};
 
-use std::fmt;
-use std::process::Command;
+use bitcoin::util::bip32::{DerivationPath, Fingerprint};
 
 #[derive(Display)]
 pub enum HWISubcommand {
@@ -36,14 +35,14 @@ pub enum HWIFlag {
     Expert,
 }
 
-impl fmt::Display for HWIFlag {
-    fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+impl HWIFlag {
+    fn to_args_vec(&self) -> Vec<String> {
         match self {
-            HWIFlag::DevicePath(p) => write!(formatter, "--device-path {}", p),
-            HWIFlag::DeviceType(t) => write!(formatter, "--device-type {}", t),
-            HWIFlag::Password(p) => write!(formatter, "--password {}", p),
-            HWIFlag::Fingerprint(f) => write!(formatter, "--fingerprint {:?}", f),
-            _ => write!(formatter, "--{:?}", self),
+            HWIFlag::DevicePath(p) => vec!(String::from("--device-path"), format!("{}", p)),
+            HWIFlag::DeviceType(t) => vec!(String::from("--device-type"), format!("{}", t)),
+            HWIFlag::Password(p) => vec!(String::from("--password"), format!("{}", p)),
+            HWIFlag::Fingerprint(f) => vec!(String::from("--fingerprint"), format!("{}", f)),
+            _ => vec!(format!("--{:?}", self).to_lowercase()),
         }
     }
 }
@@ -60,13 +59,24 @@ impl HWICommand {
         }
     }
 
-    pub fn add_subcommand(&mut self, s: HWISubcommand) -> &Self {
+    pub fn add_subcommand(&mut self, s: HWISubcommand) -> &mut Self {
         self.command.arg(s.to_string().to_lowercase());
         self
     }
 
-    pub fn add_flag(&mut self, f: HWIFlag) -> &Self {
-        self.command.arg(f.to_string().to_lowercase());
+    pub fn add_flag(&mut self, f: HWIFlag) -> &mut Self {
+        self.command.args(f.to_args_vec());
         self
+    }
+
+    pub fn add_path(&mut self, p: &DerivationPath) -> &mut Self {
+        self.command.arg(p.to_string());
+        self
+    }
+
+    // TODO: maybe deserialize here?
+    pub fn execute(&mut self) -> Output {
+        println!("{:?}", self.command);
+        self.command.output().expect("Failed to call HWI. Do you have it installed?")
     }
 }
