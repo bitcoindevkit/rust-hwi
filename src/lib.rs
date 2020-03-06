@@ -32,8 +32,7 @@ mod tests {
     #[serial]
     fn getmasterxpub() {
         let device = get_device();
-        let pb = interface::getmasterxpub(&device);
-        assert!(pb.contains_key("xpub"));
+        interface::getmasterxpub(&device);
     }
 
     #[test]
@@ -44,8 +43,18 @@ mod tests {
             ChildNumber::from_hardened_idx(44).unwrap(),
             ChildNumber::from_normal_idx(0).unwrap(),
         ]);
-        let pb = interface::getxpub(&device, &derivation_path);
-        assert!(pb.contains_key("xpub"));
+        interface::getxpub(&device, &derivation_path);
+    }
+
+    #[test]
+    #[serial]
+    fn signmessage() {
+        let device = get_device();
+        let derivation_path = DerivationPath::from(vec![
+            ChildNumber::from_hardened_idx(44).unwrap(),
+            ChildNumber::from_normal_idx(0).unwrap(),
+        ]);
+        interface::signmessage(&device, "I love magical bitcoin wallet", &derivation_path);
     }
 
     #[test]
