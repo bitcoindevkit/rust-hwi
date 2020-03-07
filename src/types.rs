@@ -1,3 +1,4 @@
+use bitcoin::util::address::Address;
 use bitcoin::util::bip32::{ExtendedPubKey, Fingerprint};
 
 use serde::{Deserialize, Serialize};
@@ -22,6 +23,11 @@ pub struct HWIExtendedPubKey {
 #[derive(Serialize, Deserialize)]
 pub struct HWISignature {
     pub signature: String,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct HWIAddress {
+    pub address: Address,
 }
 
 // TODO: use Descriptors
