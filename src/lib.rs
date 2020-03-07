@@ -25,7 +25,11 @@ mod tests {
     }
 
     fn get_first_device() -> HWIDevice {
-        interface::enumerate().unwrap().first().expect("No devices").clone()
+        interface::enumerate()
+            .unwrap()
+            .first()
+            .expect("No devices")
+            .clone()
     }
 
     #[test]
@@ -54,16 +58,33 @@ mod tests {
             ChildNumber::from_hardened_idx(44).unwrap(),
             ChildNumber::from_normal_idx(0).unwrap(),
         ]);
-        interface::sign_message(&device, "I love magical bitcoin wallet", &derivation_path)
-            .unwrap();
+        interface::sign_message(
+            &device,
+            &String::from("I love magical bitcoin wallet"),
+            &derivation_path,
+        )
+        .unwrap();
     }
 
     #[test]
     #[serial]
     fn test_get_descriptors() {
         let device = get_first_device();
-        let descriptor = interface::get_descriptors(&device).unwrap();
+        let account = Some(10);
+        let descriptor = interface::get_descriptors(&device, account).unwrap();
         assert!(descriptor.internal.len() > 0);
         assert!(descriptor.receive.len() > 0);
+    }
+
+    #[test]
+    #[serial]
+    fn test_display_address() {
+        let device = get_first_device();
+        let descriptor = interface::get_descriptors(&device, None).unwrap();
+        let descriptor = descriptor.receive.first().unwrap();
+        // Seems like hwi doesn't support descriptors checksums
+        let descriptor = &descriptor.split("#").collect::<Vec<_>>()[0].to_string();
+        let descriptor = &descriptor.replace("*", "1");     // e.g. /0/* -> /0/1
+        interface::display_address(&device, &descriptor).unwrap();
     }
 }
