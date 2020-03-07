@@ -2,6 +2,8 @@ use std::process::{Command, Output};
 
 use bitcoin::util::bip32::{DerivationPath, Fingerprint};
 
+use crate::error::Error;
+
 #[derive(Display)]
 pub enum HWISubcommand {
     Enumerate,
@@ -82,9 +84,7 @@ impl HWICommand {
     }
 
     // TODO: maybe deserialize here?
-    pub fn execute(&mut self) -> Output {
-        self.command
-            .output()
-            .expect("Failed to call HWI. Do you have it installed?")
+    pub fn execute(&mut self) -> Result<Output, Error> {
+        Ok(self.command.output()?)
     }
 }
