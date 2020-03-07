@@ -6,6 +6,7 @@ extern crate strum_macros;
 extern crate serial_test;
 
 pub mod commands;
+pub mod error;
 pub mod interface;
 pub mod types;
 
@@ -18,50 +19,50 @@ mod tests {
 
     #[test]
     #[serial]
-    fn enumerate() {
-        let devices = interface::enumerate();
+    fn test_enumerate() {
+        let devices = interface::enumerate().unwrap();
         assert!(devices.len() > 0);
     }
 
-    fn get_device() -> HWIDevice {
-        let devices = interface::enumerate();
-        devices[0].clone()
+    fn get_first_device() -> HWIDevice {
+        interface::enumerate().unwrap().first().expect("No devices").clone()
     }
 
     #[test]
     #[serial]
-    fn getmasterxpub() {
-        let device = get_device();
-        interface::getmasterxpub(&device);
+    fn test_get_master_xpub() {
+        let device = get_first_device();
+        interface::get_master_xpub(&device).unwrap();
     }
 
     #[test]
     #[serial]
-    fn getxpub() {
-        let device = get_device();
+    fn test_get_xpub() {
+        let device = get_first_device();
         let derivation_path = DerivationPath::from(vec![
             ChildNumber::from_hardened_idx(44).unwrap(),
             ChildNumber::from_normal_idx(0).unwrap(),
         ]);
-        interface::getxpub(&device, &derivation_path);
+        interface::get_xpub(&device, &derivation_path).unwrap();
     }
 
     #[test]
     #[serial]
-    fn signmessage() {
-        let device = get_device();
+    fn test_sign_message() {
+        let device = get_first_device();
         let derivation_path = DerivationPath::from(vec![
             ChildNumber::from_hardened_idx(44).unwrap(),
             ChildNumber::from_normal_idx(0).unwrap(),
         ]);
-        interface::signmessage(&device, "I love magical bitcoin wallet", &derivation_path);
+        interface::sign_message(&device, "I love magical bitcoin wallet", &derivation_path)
+            .unwrap();
     }
 
     #[test]
     #[serial]
-    fn getdescriptors() {
-        let device = get_device();
-        let descriptor = interface::getdescriptors(&device);
+    fn test_get_descriptors() {
+        let device = get_first_device();
+        let descriptor = interface::get_descriptors(&device).unwrap();
         assert!(descriptor.internal.len() > 0);
         assert!(descriptor.receive.len() > 0);
     }
