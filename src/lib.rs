@@ -70,7 +70,7 @@ mod tests {
     #[serial]
     fn test_get_descriptors() {
         let device = get_first_device();
-        let account = Some(10);
+        let account = Some(&10);
         let descriptor = interface::get_descriptors(&device, account).unwrap();
         assert!(descriptor.internal.len() > 0);
         assert!(descriptor.receive.len() > 0);
@@ -150,4 +150,67 @@ mod tests {
         interface::sign_tx(&device, &psbt).unwrap();
     }
     */
+
+    #[test]
+    #[serial]
+    fn test_get_keypool() {
+        let device = get_first_device();
+        let keypool = true;
+        let internal = false;
+        let address_type = types::HWIAddressType::Pkh;
+        let account = Some(&8);
+        let derivation_path = DerivationPath::from(vec![
+            ChildNumber::from_hardened_idx(44).unwrap(),
+            ChildNumber::from_normal_idx(0).unwrap(),
+        ]);
+        let start = 1;
+        let end = 5;
+        interface::get_keypool(
+            &device,
+            &keypool,
+            &internal,
+            &address_type,
+            account,
+            Some(&derivation_path),
+            &start,
+            &end,
+        )
+        .unwrap();
+
+        let keypool = true;
+        let internal = true;
+        let address_type = types::HWIAddressType::Wpkh;
+        let account = None;
+        let start = 1;
+        let end = 8;
+        interface::get_keypool(
+            &device,
+            &keypool,
+            &internal,
+            &address_type,
+            account,
+            None,
+            &start,
+            &end,
+        )
+        .unwrap();
+
+        let keypool = false;
+        let internal = true;
+        let address_type = types::HWIAddressType::ShWpkh;
+        let account = Some(&1);
+        let start = 0;
+        let end = 10;
+        interface::get_keypool(
+            &device,
+            &keypool,
+            &internal,
+            &address_type,
+            account,
+            Some(&derivation_path),
+            &start,
+            &end,
+        )
+        .unwrap();
+    }
 }

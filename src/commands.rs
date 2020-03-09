@@ -72,13 +72,22 @@ impl HWICommand {
         self
     }
 
-    pub fn add_sign_path(&mut self, p: &DerivationPath) -> &mut Self {
-        self.command.arg(p.to_string());
-        self
-    }
+    pub fn add_path(&mut self, p: &DerivationPath, flag: &bool, star: &bool) -> &mut Self {
+        let mut v = Vec::new();
 
-    pub fn add_key_path(&mut self, p: &DerivationPath) -> &mut Self {
-        self.command.args(vec!["--path", &p.to_string()[..]]);
+        if *flag {
+            v.push(String::from("--path"));
+        }
+
+        let mut s = p.to_string();
+
+        if *star {
+            s = format!("{}/*", s);
+        }
+
+        v.push(s);
+
+        self.command.args(v);
         self
     }
 
@@ -93,7 +102,7 @@ impl HWICommand {
         self
     }
 
-    pub fn add_account(&mut self, a: u32) -> &mut Self {
+    pub fn add_account(&mut self, a: &u32) -> &mut Self {
         self.command.args(vec!["--account", &a.to_string()[..]]);
         self
     }
@@ -113,6 +122,26 @@ impl HWICommand {
 
     pub fn add_psbt(&mut self, p: &String) -> &mut Self {
         self.command.arg(p);
+        self
+    }
+
+    pub fn add_keypool(&mut self, k: &bool) -> &mut Self {
+        if !k {
+            self.command.arg("--nokeypool");
+        }
+        self
+    }
+
+    pub fn add_internal(&mut self, i: &bool) -> &mut Self {
+        if *i {
+            self.command.arg("--internal");
+        }
+        self
+    }
+
+    pub fn add_start_end(&mut self, start: &u32, end: &u32) -> &mut Self {
+        self.command
+            .args(vec![format!("{}", start), format!("{}", end)]);
         self
     }
 

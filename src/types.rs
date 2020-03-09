@@ -42,6 +42,17 @@ pub struct HWIDescriptor {
     pub receive: Vec<String>,
 }
 
+#[derive(Serialize, Deserialize)]
+pub struct HWIKeyPoolElement {
+    pub desc: String,
+    pub range: Vec<u32>,
+    pub timestamp: String,
+    pub internal: bool,
+    pub keypool: bool,
+    pub active: bool,
+    pub watchonly: bool,
+}
+
 pub enum HWIAddressType {
     Pkh,
     ShWpkh,
