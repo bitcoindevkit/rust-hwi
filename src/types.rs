@@ -49,7 +49,6 @@ pub struct HWIKeyPoolElement {
     pub timestamp: String,
     pub internal: bool,
     pub keypool: bool,
-    pub active: bool,
     pub watchonly: bool,
 }
 

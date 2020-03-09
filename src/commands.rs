@@ -15,12 +15,12 @@ pub enum HWISubcommand {
     GetKeypool,
     GetDescriptors,
     DisplayAddress,
-    Setup,
-    Wipe,
-    Restore,
-    Backup,
-    PromptPin,
-    SendPin,
+    // TODO: Setup,
+    // TODO: Wipe,
+    // TODO: Restore,
+    // TODO: Backup,
+    // TODO: PromptPin,
+    // TODO: SendPin,
 }
 
 #[derive(Debug)]
@@ -28,14 +28,13 @@ pub enum HWIFlag {
     DevicePath(String),
     DeviceType(String),
     Password(String),
-    StdinPass,
-    Testnet,
-    Debug,
+    // TODO: StdinPass,
+    // TODO: Testnet,
+    // TODO: Debug,
     Fingerprint(Fingerprint),
-    Version,
-    Stdin,
-    Interactive,
-    Expert,
+    // TODO: Version,
+    // TODO: Stdin,
+    // TODO: Interactive,
 }
 
 impl HWIFlag {
@@ -45,7 +44,7 @@ impl HWIFlag {
             HWIFlag::DeviceType(t) => vec![String::from("--device-type"), format!("{}", t)],
             HWIFlag::Password(p) => vec![String::from("--password"), format!("{}", p)],
             HWIFlag::Fingerprint(f) => vec![String::from("--fingerprint"), format!("{}", f)],
-            _ => vec![format!("--{:?}", self).to_lowercase()],
+            //_ => vec![format!("--{:?}", self).to_lowercase()],
         }
     }
 }
