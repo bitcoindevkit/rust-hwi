@@ -36,3 +36,9 @@ pub struct HWIDescriptor {
     pub internal: Vec<String>,
     pub receive: Vec<String>,
 }
+
+pub enum HWIAddressType {
+    Pkh,
+    ShWpkh,
+    Wpkh,
+}

@@ -3,6 +3,7 @@ pub enum Error {
     JSON(serde_json::error::Error),
     Utf8(std::str::Utf8Error),
     IOError(std::io::Error),
+    InvalidOption(String),
 }
 
 macro_rules! impl_error {

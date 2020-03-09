@@ -3,6 +3,7 @@ use std::process::{Command, Output};
 use bitcoin::util::bip32::{DerivationPath, Fingerprint};
 
 use crate::error::Error;
+use crate::types::HWIAddressType;
 
 #[derive(Display)]
 pub enum HWISubcommand {
@@ -71,8 +72,13 @@ impl HWICommand {
         self
     }
 
-    pub fn add_path(&mut self, p: &DerivationPath) -> &mut Self {
+    pub fn add_sign_path(&mut self, p: &DerivationPath) -> &mut Self {
         self.command.arg(p.to_string());
+        self
+    }
+
+    pub fn add_key_path(&mut self, p: &DerivationPath) -> &mut Self {
+        self.command.args(vec!["--path", &p.to_string()[..]]);
         self
     }
 
@@ -89,6 +95,15 @@ impl HWICommand {
 
     pub fn add_account(&mut self, a: u32) -> &mut Self {
         self.command.args(vec!["--account", &a.to_string()[..]]);
+        self
+    }
+
+    pub fn add_address_type(&mut self, address_type: &HWIAddressType) -> &mut Self {
+        match address_type {
+            HWIAddressType::ShWpkh => { self.command.arg("--sh_wpkh"); }
+            HWIAddressType::Wpkh => { self.command.arg("--wpkh"); }
+            _ => {},
+        };
         self
     }
 
