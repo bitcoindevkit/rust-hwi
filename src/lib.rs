@@ -13,7 +13,7 @@ pub mod types;
 #[cfg(test)]
 mod tests {
     use crate::interface;
-    use crate::types::HWIDevice;
+    use crate::types;
 
     use bitcoin::util::bip32::{ChildNumber, DerivationPath};
 
@@ -24,7 +24,7 @@ mod tests {
         assert!(devices.len() > 0);
     }
 
-    fn get_first_device() -> HWIDevice {
+    fn get_first_device() -> types::HWIDevice {
         interface::enumerate()
             .unwrap()
             .first()
@@ -78,13 +78,46 @@ mod tests {
 
     #[test]
     #[serial]
-    fn test_display_address() {
+    fn test_display_address_with_desc() {
         let device = get_first_device();
         let descriptor = interface::get_descriptors(&device, None).unwrap();
         let descriptor = descriptor.receive.first().unwrap();
         // Seems like hwi doesn't support descriptors checksums
         let descriptor = &descriptor.split("#").collect::<Vec<_>>()[0].to_string();
         let descriptor = &descriptor.replace("*", "1");     // e.g. /0/* -> /0/1
-        interface::display_address(&device, &descriptor).unwrap();
+        interface::display_address_with_desc(&device, &descriptor).unwrap();
+    }
+
+    #[test]
+    #[serial]
+    fn test_display_address_with_path_pkh() {
+        let device = get_first_device();
+        let derivation_path = DerivationPath::from(vec![
+            ChildNumber::from_hardened_idx(44).unwrap(),
+            ChildNumber::from_normal_idx(0).unwrap(),
+        ]);
+        interface::display_address_with_path(&device, &derivation_path, &types::HWIAddressType::Pkh).unwrap();
+    }
+
+    #[test]
+    #[serial]
+    fn test_display_address_with_path_shwpkh() {
+        let device = get_first_device();
+        let derivation_path = DerivationPath::from(vec![
+            ChildNumber::from_hardened_idx(44).unwrap(),
+            ChildNumber::from_normal_idx(0).unwrap(),
+        ]);
+        interface::display_address_with_path(&device, &derivation_path, &types::HWIAddressType::ShWpkh).unwrap();
+    }
+
+    #[test]
+    #[serial]
+    fn test_display_address_with_path_wpkh() {
+        let device = get_first_device();
+        let derivation_path = DerivationPath::from(vec![
+            ChildNumber::from_hardened_idx(44).unwrap(),
+            ChildNumber::from_normal_idx(0).unwrap(),
+        ]);
+        interface::display_address_with_path(&device, &derivation_path, &types::HWIAddressType::Wpkh).unwrap();
     }
 }

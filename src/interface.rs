@@ -4,7 +4,7 @@ use bitcoin::util::bip32::DerivationPath;
 
 use crate::commands::{HWICommand, HWIFlag, HWISubcommand};
 use crate::error::Error;
-use crate::types::{HWIAddress, HWIDescriptor, HWIDevice, HWIExtendedPubKey, HWISignature};
+use crate::types::{HWIAddress, HWIAddressType, HWIDescriptor, HWIDevice, HWIExtendedPubKey, HWISignature};
 
 pub fn enumerate() -> Result<Vec<HWIDevice>, Error> {
     let output = HWICommand::new()
@@ -27,7 +27,7 @@ pub fn get_xpub(device: &HWIDevice, path: &DerivationPath) -> Result<HWIExtended
     let output = HWICommand::new()
         .add_flag(HWIFlag::Fingerprint(device.fingerprint))
         .add_subcommand(HWISubcommand::GetXpub)
-        .add_path(path)
+        .add_sign_path(path)
         .execute()?;
     Ok(serde_json::from_str(from_utf8(&output.stdout)?)?)
 }
@@ -41,7 +41,7 @@ pub fn sign_message(
         .add_flag(HWIFlag::Fingerprint(device.fingerprint))
         .add_subcommand(HWISubcommand::SignMessage)
         .add_message(message)
-        .add_path(path)
+        .add_sign_path(path)
         .execute()?;
     Ok(serde_json::from_str(from_utf8(&output.stdout)?)?)
 }
@@ -61,11 +61,21 @@ pub fn get_descriptors(device: &HWIDevice, account: Option<u32>) -> Result<HWIDe
     Ok(serde_json::from_str(from_utf8(&output.stdout)?)?)
 }
 
-pub fn display_address(device: &HWIDevice, descriptor: &String) -> Result<HWIAddress, Error> {
+pub fn display_address_with_desc(device: &HWIDevice, descriptor: &String,) -> Result<HWIAddress, Error> {
     let output = HWICommand::new()
         .add_flag(HWIFlag::Fingerprint(device.fingerprint))
         .add_subcommand(HWISubcommand::DisplayAddress)
         .add_descriptor(descriptor)
+        .execute()?;
+    Ok(serde_json::from_str(from_utf8(&output.stdout)?)?)
+}
+
+pub fn display_address_with_path(device: &HWIDevice, path: &DerivationPath, address_type: &HWIAddressType) -> Result<HWIAddress, Error> {
+    let output = HWICommand::new()
+        .add_flag(HWIFlag::Fingerprint(device.fingerprint))
+        .add_subcommand(HWISubcommand::DisplayAddress)
+        .add_key_path(path)
+        .add_address_type(address_type)
         .execute()?;
     Ok(serde_json::from_str(from_utf8(&output.stdout)?)?)
 }
