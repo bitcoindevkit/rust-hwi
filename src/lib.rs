@@ -84,7 +84,7 @@ mod tests {
         let descriptor = descriptor.receive.first().unwrap();
         // Seems like hwi doesn't support descriptors checksums
         let descriptor = &descriptor.split("#").collect::<Vec<_>>()[0].to_string();
-        let descriptor = &descriptor.replace("*", "1");     // e.g. /0/* -> /0/1
+        let descriptor = &descriptor.replace("*", "1"); // e.g. /0/* -> /0/1
         interface::display_address_with_desc(&device, &descriptor).unwrap();
     }
 
@@ -96,7 +96,12 @@ mod tests {
             ChildNumber::from_hardened_idx(44).unwrap(),
             ChildNumber::from_normal_idx(0).unwrap(),
         ]);
-        interface::display_address_with_path(&device, &derivation_path, &types::HWIAddressType::Pkh).unwrap();
+        interface::display_address_with_path(
+            &device,
+            &derivation_path,
+            &types::HWIAddressType::Pkh,
+        )
+        .unwrap();
     }
 
     #[test]
@@ -107,7 +112,12 @@ mod tests {
             ChildNumber::from_hardened_idx(44).unwrap(),
             ChildNumber::from_normal_idx(0).unwrap(),
         ]);
-        interface::display_address_with_path(&device, &derivation_path, &types::HWIAddressType::ShWpkh).unwrap();
+        interface::display_address_with_path(
+            &device,
+            &derivation_path,
+            &types::HWIAddressType::ShWpkh,
+        )
+        .unwrap();
     }
 
     #[test]
@@ -118,6 +128,26 @@ mod tests {
             ChildNumber::from_hardened_idx(44).unwrap(),
             ChildNumber::from_normal_idx(0).unwrap(),
         ]);
-        interface::display_address_with_path(&device, &derivation_path, &types::HWIAddressType::Wpkh).unwrap();
+        interface::display_address_with_path(
+            &device,
+            &derivation_path,
+            &types::HWIAddressType::Wpkh,
+        )
+        .unwrap();
     }
+
+    /*
+       TODO: generalize this test using magical
+       Only works with my coldcard simulator at the moment
+    #[test]
+    #[serial]
+    fn test_sign_tx() {
+        use bitcoin::util::psbt::PartiallySignedTransaction;
+        use bitcoin::consensus::encode::{deserialize};
+        let device = get_first_device();
+        let psbt_buf = base64::decode("cHNidP8BAHcCAAAAASo8/raGYGem0zxP2aiKIBrRy9hNq/d2StEtpG9FUW/lAQAAAAD/////AugDAAAAAAAAGXapFJ/833DkRBlDm/fsYT0ANYSvRXsYiKxFIgAAAAAAABl2qRQPoiwXDpKAOmsHT0NcjIr4XBox84isAAAAAAABAOICAAAAAAEB7ilZ8keXcKRJbLjjCY+54jB1tweZW19jiljUtLpMGkYBAAAAAP7///8CgMAfAAAAAAAXqRT9zZYHcN0ixQUrvSHehgvly6RNfIcQJwAAAAAAABl2qRT/y++vdIZvp4hfjfIllGi72Sml5YisAkcwRAIgX+b63MO4jU1G0LkkMDrMsfPPW1SHIAO0Pyu5vUEFZqECIDL/HNS4VB5Qti1B0xuSot8uEWL2N63Mmj5dL6UYh1ZzASECMgf20/uJZlO/yPEZjvm/ZhNmWqhfANrIiIQFzM/ewJcIeRkAAQMEAQAAACIGAkX4058RlrR33vfbHqdqlBi3+Z64WuSrTr7Qtn38aycuGA8FaUMsAACAAAAAgAAAAIAAAAAAAAAAAAAAAA==").unwrap();
+        let psbt: PartiallySignedTransaction = deserialize(&psbt_buf).unwrap();
+        interface::sign_tx(&device, &psbt).unwrap();
+    }
+    */
 }

@@ -100,10 +100,19 @@ impl HWICommand {
 
     pub fn add_address_type(&mut self, address_type: &HWIAddressType) -> &mut Self {
         match address_type {
-            HWIAddressType::ShWpkh => { self.command.arg("--sh_wpkh"); }
-            HWIAddressType::Wpkh => { self.command.arg("--wpkh"); }
-            _ => {},
+            HWIAddressType::ShWpkh => {
+                self.command.arg("--sh_wpkh");
+            }
+            HWIAddressType::Wpkh => {
+                self.command.arg("--wpkh");
+            }
+            _ => {}
         };
+        self
+    }
+
+    pub fn add_psbt(&mut self, p: &String) -> &mut Self {
+        self.command.arg(p);
         self
     }
 

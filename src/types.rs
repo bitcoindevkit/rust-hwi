@@ -30,6 +30,11 @@ pub struct HWIAddress {
     pub address: Address,
 }
 
+#[derive(Serialize, Deserialize)]
+pub struct HWIPartiallySignedTransaction {
+    pub psbt: String,
+}
+
 // TODO: use Descriptors
 #[derive(Serialize, Deserialize)]
 pub struct HWIDescriptor {
