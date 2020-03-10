@@ -6,6 +6,8 @@ use bitcoin::util::psbt::PartiallySignedTransaction;
 
 use base64;
 
+use serde_json::value::Value;
+
 use crate::commands::{HWICommand, HWIFlag, HWISubcommand};
 use crate::error::Error;
 use crate::types::{
@@ -13,11 +15,26 @@ use crate::types::{
     HWIPartiallySignedTransaction, HWISignature,
 };
 
+macro_rules! deserialize_obj {
+    ( $e: expr ) => {{
+        let value: Value = serde_json::from_str(from_utf8($e)?)?;
+        let obj = value.clone();
+        let res = serde_json::from_value(value);
+        match res {
+            Ok(o) => Ok(o),
+            Err(e) => Err(Error::HWIError(format!(
+                "Error {:?} while deserializing {:?}",
+                e, obj
+            ))),
+        }
+    }};
+}
+
 pub fn enumerate() -> Result<Vec<HWIDevice>, Error> {
     let output = HWICommand::new()
         .add_subcommand(HWISubcommand::Enumerate)
         .execute()?;
-    Ok(serde_json::from_str(from_utf8(&output.stdout)?)?)
+    deserialize_obj!(&output.stdout)
 }
 
 pub fn get_master_xpub(device: &HWIDevice) -> Result<HWIExtendedPubKey, Error> {
@@ -25,7 +42,7 @@ pub fn get_master_xpub(device: &HWIDevice) -> Result<HWIExtendedPubKey, Error> {
         .add_flag(HWIFlag::Fingerprint(device.fingerprint))
         .add_subcommand(HWISubcommand::GetMasterXpub)
         .execute()?;
-    Ok(serde_json::from_str(from_utf8(&output.stdout)?)?)
+    deserialize_obj!(&output.stdout)
 }
 
 pub fn sign_tx(
@@ -38,7 +55,7 @@ pub fn sign_tx(
         .add_subcommand(HWISubcommand::SignTx)
         .add_psbt(&psbt)
         .execute()?;
-    Ok(serde_json::from_str(from_utf8(&output.stdout)?)?)
+    deserialize_obj!(&output.stdout)
 }
 
 pub fn get_xpub(device: &HWIDevice, path: &DerivationPath) -> Result<HWIExtendedPubKey, Error> {
@@ -47,7 +64,7 @@ pub fn get_xpub(device: &HWIDevice, path: &DerivationPath) -> Result<HWIExtended
         .add_subcommand(HWISubcommand::GetXpub)
         .add_path(&path, &false, &false)
         .execute()?;
-    Ok(serde_json::from_str(from_utf8(&output.stdout)?)?)
+    deserialize_obj!(&output.stdout)
 }
 
 pub fn sign_message(
@@ -61,7 +78,7 @@ pub fn sign_message(
         .add_message(&message)
         .add_path(&path, &false, &false)
         .execute()?;
-    Ok(serde_json::from_str(from_utf8(&output.stdout)?)?)
+    deserialize_obj!(&output.stdout)
 }
 
 pub fn get_keypool(
@@ -91,7 +108,7 @@ pub fn get_keypool(
     }
 
     let output = command.add_start_end(&start, &end).execute()?;
-    Ok(serde_json::from_str(from_utf8(&output.stdout)?)?)
+    deserialize_obj!(&output.stdout)
 }
 
 pub fn get_descriptors(device: &HWIDevice, account: Option<&u32>) -> Result<HWIDescriptor, Error> {
@@ -105,7 +122,7 @@ pub fn get_descriptors(device: &HWIDevice, account: Option<&u32>) -> Result<HWID
     };
 
     let output = command.execute()?;
-    Ok(serde_json::from_str(from_utf8(&output.stdout)?)?)
+    deserialize_obj!(&output.stdout)
 }
 
 pub fn display_address_with_desc(
@@ -117,7 +134,7 @@ pub fn display_address_with_desc(
         .add_subcommand(HWISubcommand::DisplayAddress)
         .add_descriptor(&descriptor)
         .execute()?;
-    Ok(serde_json::from_str(from_utf8(&output.stdout)?)?)
+    deserialize_obj!(&output.stdout)
 }
 
 pub fn display_address_with_path(
@@ -131,5 +148,5 @@ pub fn display_address_with_path(
         .add_path(&path, &true, &false)
         .add_address_type(&address_type)
         .execute()?;
-    Ok(serde_json::from_str(from_utf8(&output.stdout)?)?)
+    deserialize_obj!(&output.stdout)
 }

@@ -1,9 +1,9 @@
 use bitcoin::util::address::Address;
 use bitcoin::util::bip32::{ExtendedPubKey, Fingerprint};
 
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize};
 
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Clone, Deserialize)]
 pub struct HWIDevice {
     #[serde(rename(deserialize = "type"))]
     pub device_type: String,
@@ -14,35 +14,35 @@ pub struct HWIDevice {
     pub fingerprint: Fingerprint,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Deserialize)]
 pub struct HWIExtendedPubKey {
     pub xpub: ExtendedPubKey,
 }
 
 // TODO: is signature a String?
-#[derive(Serialize, Deserialize)]
+#[derive(Deserialize)]
 pub struct HWISignature {
     pub signature: String,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Deserialize)]
 pub struct HWIAddress {
     pub address: Address,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Deserialize)]
 pub struct HWIPartiallySignedTransaction {
     pub psbt: String,
 }
 
 // TODO: use Descriptors
-#[derive(Serialize, Deserialize)]
+#[derive(Deserialize)]
 pub struct HWIDescriptor {
     pub internal: Vec<String>,
     pub receive: Vec<String>,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Deserialize)]
 pub struct HWIKeyPoolElement {
     pub desc: String,
     pub range: Vec<u32>,
