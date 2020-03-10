@@ -36,7 +36,7 @@ mod tests {
     #[serial]
     fn test_get_master_xpub() {
         let device = get_first_device();
-        interface::get_master_xpub(&device).unwrap();
+        interface::get_master_xpub(&device, &true).unwrap();
     }
 
     #[test]
@@ -47,7 +47,7 @@ mod tests {
             ChildNumber::from_hardened_idx(44).unwrap(),
             ChildNumber::from_normal_idx(0).unwrap(),
         ]);
-        interface::get_xpub(&device, &derivation_path).unwrap();
+        interface::get_xpub(&device, &derivation_path, &true).unwrap();
     }
 
     #[test]
@@ -62,6 +62,7 @@ mod tests {
             &device,
             &String::from("I love magical bitcoin wallet"),
             &derivation_path,
+            &true,
         )
         .unwrap();
     }
@@ -71,7 +72,7 @@ mod tests {
     fn test_get_descriptors() {
         let device = get_first_device();
         let account = Some(&10);
-        let descriptor = interface::get_descriptors(&device, account).unwrap();
+        let descriptor = interface::get_descriptors(&device, account, &true).unwrap();
         assert!(descriptor.internal.len() > 0);
         assert!(descriptor.receive.len() > 0);
     }
@@ -80,12 +81,12 @@ mod tests {
     #[serial]
     fn test_display_address_with_desc() {
         let device = get_first_device();
-        let descriptor = interface::get_descriptors(&device, None).unwrap();
+        let descriptor = interface::get_descriptors(&device, None, &true).unwrap();
         let descriptor = descriptor.receive.first().unwrap();
         // Seems like hwi doesn't support descriptors checksums
         let descriptor = &descriptor.split("#").collect::<Vec<_>>()[0].to_string();
         let descriptor = &descriptor.replace("*", "1"); // e.g. /0/* -> /0/1
-        interface::display_address_with_desc(&device, &descriptor).unwrap();
+        interface::display_address_with_desc(&device, &descriptor, &true).unwrap();
     }
 
     #[test]
@@ -100,6 +101,7 @@ mod tests {
             &device,
             &derivation_path,
             &types::HWIAddressType::Pkh,
+            &true,
         )
         .unwrap();
     }
@@ -116,6 +118,7 @@ mod tests {
             &device,
             &derivation_path,
             &types::HWIAddressType::ShWpkh,
+            &true,
         )
         .unwrap();
     }
@@ -132,6 +135,7 @@ mod tests {
             &device,
             &derivation_path,
             &types::HWIAddressType::Wpkh,
+            &true,
         )
         .unwrap();
     }
@@ -174,6 +178,7 @@ mod tests {
             Some(&derivation_path),
             &start,
             &end,
+            &true,
         )
         .unwrap();
 
@@ -192,6 +197,7 @@ mod tests {
             None,
             &start,
             &end,
+            &true,
         )
         .unwrap();
 
@@ -210,6 +216,7 @@ mod tests {
             Some(&derivation_path),
             &start,
             &end,
+            &true,
         )
         .unwrap();
     }

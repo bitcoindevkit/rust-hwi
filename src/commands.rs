@@ -29,7 +29,7 @@ pub enum HWIFlag {
     DeviceType(String),
     Password(String),
     // TODO: StdinPass,
-    // TODO: Testnet,
+    Testnet,
     // TODO: Debug,
     Fingerprint(Fingerprint),
     // TODO: Version,
@@ -44,7 +44,7 @@ impl HWIFlag {
             HWIFlag::DeviceType(t) => vec![String::from("--device-type"), format!("{}", t)],
             HWIFlag::Password(p) => vec![String::from("--password"), format!("{}", p)],
             HWIFlag::Fingerprint(f) => vec![String::from("--fingerprint"), format!("{}", f)],
-            //_ => vec![format!("--{:?}", self).to_lowercase()],
+            _ => vec![format!("--{:?}", self).to_lowercase()],
         }
     }
 }
@@ -141,6 +141,13 @@ impl HWICommand {
     pub fn add_start_end(&mut self, start: &u32, end: &u32) -> &mut Self {
         self.command
             .args(vec![format!("{}", start), format!("{}", end)]);
+        self
+    }
+
+    pub fn add_testnet(&mut self, testnet: &bool) -> &mut Self {
+        if *testnet {
+            self.add_flag(HWIFlag::Testnet);
+        }
         self
     }
 
