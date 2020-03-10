@@ -4,6 +4,7 @@ pub enum Error {
     Utf8(std::str::Utf8Error),
     IOError(std::io::Error),
     InvalidOption(String),
+    HWIError(String),
 }
 
 macro_rules! impl_error {
