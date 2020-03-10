@@ -1,18 +1,7 @@
 use bitcoin::util::address::Address;
-use bitcoin::util::bip32::{ExtendedPubKey, Fingerprint};
+use bitcoin::util::bip32::ExtendedPubKey;
 
 use serde::Deserialize;
-
-#[derive(Clone, Deserialize)]
-pub struct HWIDevice {
-    #[serde(rename(deserialize = "type"))]
-    pub device_type: String,
-    pub model: String,
-    pub path: String,
-    pub needs_pin_sent: bool,
-    pub needs_passphrase_sent: bool,
-    pub fingerprint: Fingerprint,
-}
 
 #[derive(Deserialize)]
 pub struct HWIExtendedPubKey {
@@ -52,6 +41,7 @@ pub struct HWIKeyPoolElement {
     pub watchonly: bool,
 }
 
+#[derive(Clone)]
 pub enum HWIAddressType {
     Pkh,
     ShWpkh,

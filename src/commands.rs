@@ -71,16 +71,16 @@ impl HWICommand {
         self
     }
 
-    pub fn add_path(&mut self, p: &DerivationPath, flag: &bool, star: &bool) -> &mut Self {
+    pub fn add_path(&mut self, p: &DerivationPath, flag: bool, star: bool) -> &mut Self {
         let mut v = Vec::new();
 
-        if *flag {
+        if flag {
             v.push(String::from("--path"));
         }
 
         let mut s = p.to_string();
 
-        if *star {
+        if star {
             s = format!("{}/*", s);
         }
 
@@ -91,22 +91,22 @@ impl HWICommand {
     }
 
     // Command escapes m, preventing injections
-    pub fn add_message(&mut self, m: &String) -> &mut Self {
+    pub fn add_message(&mut self, m: &str) -> &mut Self {
         self.command.arg(m);
         self
     }
 
-    pub fn add_descriptor(&mut self, d: &String) -> &mut Self {
+    pub fn add_descriptor(&mut self, d: &str) -> &mut Self {
         self.command.args(vec!["--desc", d]);
         self
     }
 
-    pub fn add_account(&mut self, a: &u32) -> &mut Self {
+    pub fn add_account(&mut self, a: u32) -> &mut Self {
         self.command.args(vec!["--account", &a.to_string()[..]]);
         self
     }
 
-    pub fn add_address_type(&mut self, address_type: &HWIAddressType) -> &mut Self {
+    pub fn add_address_type(&mut self, address_type: HWIAddressType) -> &mut Self {
         match address_type {
             HWIAddressType::ShWpkh => {
                 self.command.arg("--sh_wpkh");
@@ -119,33 +119,33 @@ impl HWICommand {
         self
     }
 
-    pub fn add_psbt(&mut self, p: &String) -> &mut Self {
+    pub fn add_psbt(&mut self, p: &str) -> &mut Self {
         self.command.arg(p);
         self
     }
 
-    pub fn add_keypool(&mut self, k: &bool) -> &mut Self {
+    pub fn add_keypool(&mut self, k: bool) -> &mut Self {
         if !k {
             self.command.arg("--nokeypool");
         }
         self
     }
 
-    pub fn add_internal(&mut self, i: &bool) -> &mut Self {
-        if *i {
+    pub fn add_internal(&mut self, i: bool) -> &mut Self {
+        if i {
             self.command.arg("--internal");
         }
         self
     }
 
-    pub fn add_start_end(&mut self, start: &u32, end: &u32) -> &mut Self {
+    pub fn add_start_end(&mut self, start: u32, end: u32) -> &mut Self {
         self.command
             .args(vec![format!("{}", start), format!("{}", end)]);
         self
     }
 
-    pub fn add_testnet(&mut self, testnet: &bool) -> &mut Self {
-        if *testnet {
+    pub fn add_testnet(&mut self, testnet: bool) -> &mut Self {
+        if testnet {
             self.add_flag(HWIFlag::Testnet);
         }
         self
