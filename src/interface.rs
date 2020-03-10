@@ -37,9 +37,10 @@ pub fn enumerate() -> Result<Vec<HWIDevice>, Error> {
     deserialize_obj!(&output.stdout)
 }
 
-pub fn get_master_xpub(device: &HWIDevice) -> Result<HWIExtendedPubKey, Error> {
+pub fn get_master_xpub(device: &HWIDevice, testnet: &bool) -> Result<HWIExtendedPubKey, Error> {
     let output = HWICommand::new()
         .add_flag(HWIFlag::Fingerprint(device.fingerprint))
+        .add_testnet(testnet)
         .add_subcommand(HWISubcommand::GetMasterXpub)
         .execute()?;
     deserialize_obj!(&output.stdout)
@@ -48,19 +49,26 @@ pub fn get_master_xpub(device: &HWIDevice) -> Result<HWIExtendedPubKey, Error> {
 pub fn sign_tx(
     device: &HWIDevice,
     psbt: &PartiallySignedTransaction,
+    testnet: &bool,
 ) -> Result<HWIPartiallySignedTransaction, Error> {
     let psbt = base64::encode(&serialize(psbt));
     let output = HWICommand::new()
         .add_flag(HWIFlag::Fingerprint(device.fingerprint))
+        .add_testnet(testnet)
         .add_subcommand(HWISubcommand::SignTx)
         .add_psbt(&psbt)
         .execute()?;
     deserialize_obj!(&output.stdout)
 }
 
-pub fn get_xpub(device: &HWIDevice, path: &DerivationPath) -> Result<HWIExtendedPubKey, Error> {
+pub fn get_xpub(
+    device: &HWIDevice,
+    path: &DerivationPath,
+    testnet: &bool,
+) -> Result<HWIExtendedPubKey, Error> {
     let output = HWICommand::new()
         .add_flag(HWIFlag::Fingerprint(device.fingerprint))
+        .add_testnet(testnet)
         .add_subcommand(HWISubcommand::GetXpub)
         .add_path(&path, &false, &false)
         .execute()?;
@@ -71,9 +79,11 @@ pub fn sign_message(
     device: &HWIDevice,
     message: &String,
     path: &DerivationPath,
+    testnet: &bool,
 ) -> Result<HWISignature, Error> {
     let output = HWICommand::new()
         .add_flag(HWIFlag::Fingerprint(device.fingerprint))
+        .add_testnet(testnet)
         .add_subcommand(HWISubcommand::SignMessage)
         .add_message(&message)
         .add_path(&path, &false, &false)
@@ -90,10 +100,12 @@ pub fn get_keypool(
     path: Option<&DerivationPath>,
     start: &u32,
     end: &u32,
+    testnet: &bool,
 ) -> Result<Vec<HWIKeyPoolElement>, Error> {
     let mut command = HWICommand::new();
     command
         .add_flag(HWIFlag::Fingerprint(device.fingerprint))
+        .add_testnet(testnet)
         .add_subcommand(HWISubcommand::GetKeypool)
         .add_keypool(&keypool)
         .add_internal(&internal)
@@ -111,10 +123,15 @@ pub fn get_keypool(
     deserialize_obj!(&output.stdout)
 }
 
-pub fn get_descriptors(device: &HWIDevice, account: Option<&u32>) -> Result<HWIDescriptor, Error> {
+pub fn get_descriptors(
+    device: &HWIDevice,
+    account: Option<&u32>,
+    testnet: &bool,
+) -> Result<HWIDescriptor, Error> {
     let mut command = HWICommand::new();
     command
         .add_flag(HWIFlag::Fingerprint(device.fingerprint))
+        .add_testnet(testnet)
         .add_subcommand(HWISubcommand::GetDescriptors);
 
     if let Some(a) = account {
@@ -128,9 +145,11 @@ pub fn get_descriptors(device: &HWIDevice, account: Option<&u32>) -> Result<HWID
 pub fn display_address_with_desc(
     device: &HWIDevice,
     descriptor: &String,
+    testnet: &bool,
 ) -> Result<HWIAddress, Error> {
     let output = HWICommand::new()
         .add_flag(HWIFlag::Fingerprint(device.fingerprint))
+        .add_testnet(testnet)
         .add_subcommand(HWISubcommand::DisplayAddress)
         .add_descriptor(&descriptor)
         .execute()?;
@@ -141,9 +160,11 @@ pub fn display_address_with_path(
     device: &HWIDevice,
     path: &DerivationPath,
     address_type: &HWIAddressType,
+    testnet: &bool,
 ) -> Result<HWIAddress, Error> {
     let output = HWICommand::new()
         .add_flag(HWIFlag::Fingerprint(device.fingerprint))
+        .add_testnet(testnet)
         .add_subcommand(HWISubcommand::DisplayAddress)
         .add_path(&path, &true, &false)
         .add_address_type(&address_type)

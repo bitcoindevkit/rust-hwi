@@ -1,7 +1,7 @@
 use bitcoin::util::address::Address;
 use bitcoin::util::bip32::{ExtendedPubKey, Fingerprint};
 
-use serde::{Deserialize};
+use serde::Deserialize;
 
 #[derive(Clone, Deserialize)]
 pub struct HWIDevice {
