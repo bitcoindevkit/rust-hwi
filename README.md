@@ -74,7 +74,7 @@ pip install -r requirements.txt
 
 ## Tests
 
-Unfortunatly at the moment you'll need a HW plugged in to be able to run tests.
+At the moment you'll need a HW plugged in to be able to run tests.
 
 If you don't have a hardware wallet, you can try [coldcard simulator](https://github.com/Coldcard/firmware).
 
