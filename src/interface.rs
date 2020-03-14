@@ -37,6 +37,7 @@ pub struct HWIDevice {
 }
 
 impl HWIDevice {
+    /// Lists all HW devices currently connected.
     pub fn enumerate() -> Result<Vec<HWIDevice>, Error> {
         let output = HWICommand::new()
             .add_subcommand(HWISubcommand::Enumerate)
@@ -44,6 +45,9 @@ impl HWIDevice {
         deserialize_obj!(&output.stdout)
     }
 
+    /// Returns the master xpub of a device.
+    /// # Arguments
+    /// * `testnet` - Whether to use testnet or not.
     pub fn get_master_xpub(&self, testnet: bool) -> Result<HWIExtendedPubKey, Error> {
         let output = HWICommand::new()
             .add_flag(HWIFlag::Fingerprint(self.fingerprint))
@@ -53,6 +57,10 @@ impl HWIDevice {
         deserialize_obj!(&output.stdout)
     }
 
+    /// Returns a psbt signed.
+    /// # Arguments
+    /// * `psbt` - The PSBT to be signed.
+    /// * `testnet` - Whether to use testnet or not.
     pub fn sign_tx(
         &self,
         psbt: &PartiallySignedTransaction,
@@ -68,6 +76,10 @@ impl HWIDevice {
         deserialize_obj!(&output.stdout)
     }
 
+    /// Returns the xpub of a device.
+    /// # Arguments
+    /// * `path` - The derivation path to derive the key.
+    /// * `testnet` - Whether to use testnet or not.
     pub fn get_xpub(
         &self,
         path: &DerivationPath,
@@ -82,6 +94,11 @@ impl HWIDevice {
         deserialize_obj!(&output.stdout)
     }
 
+    /// Signs a message.
+    /// # Arguments
+    /// * `message` - The message to sign.
+    /// * `path` - The derivation path to derive the key.
+    /// * `testnet` - Whether to use testnet or not.
     pub fn sign_message(
         &self,
         message: &str,
@@ -98,6 +115,16 @@ impl HWIDevice {
         deserialize_obj!(&output.stdout)
     }
 
+    /// Returns an array of keys that can be imported in Bitcoin core using importmulti
+    /// # Arguments
+    /// * `keypool` - `keypool` value in result. Check bitcoin core importmulti documentation for further information
+    /// * `internal` - Whether to use internal (change) or external keys
+    /// * `address type` - HWIAddressType to use
+    /// * `account` - Optional BIP43 account to use
+    /// * `path` - The derivation path to derive the keys.
+    /// * `start` - Keypool start
+    /// * `end` - Keypool end
+    /// * `testnet` - Whether to use testnet or not.
     pub fn get_keypool(
         &self,
         keypool: bool,
@@ -130,6 +157,10 @@ impl HWIDevice {
         deserialize_obj!(&output.stdout)
     }
 
+    /// Returns device descriptors
+    /// # Arguments
+    /// * `account` - Optional BIP43 account to use.
+    /// * `testnet` - Whether to use testnet or not.
     pub fn get_descriptors(
         &self,
         account: Option<u32>,
@@ -149,6 +180,10 @@ impl HWIDevice {
         deserialize_obj!(&output.stdout)
     }
 
+    /// Returns an address given a descriptor.
+    /// # Arguments
+    /// * `descriptor` - The descriptor to use.
+    /// * `testnet` - Whether to use testnet or not.
     pub fn display_address_with_desc(
         &self,
         descriptor: &str,
@@ -163,6 +198,11 @@ impl HWIDevice {
         deserialize_obj!(&output.stdout)
     }
 
+    /// Returns an address given pat and address type
+    /// # Arguments
+    /// * `path` - The derivation path to use.
+    /// * `address_type` - Address type to use.
+    /// * `testnet` - Whether to use testnet or not.
     pub fn display_address_with_path(
         &self,
         path: &DerivationPath,
