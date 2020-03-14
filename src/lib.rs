@@ -1,3 +1,5 @@
+//! Rust wrapper for [HWI](https://github.com/bitcoin-core/HWI/).
+
 #[macro_use]
 extern crate strum_macros;
 
