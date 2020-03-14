@@ -24,14 +24,14 @@ brew install libusb
 
 - Clone the repo
 ```
-$ git clone https://github.com/MagicalBitcoin/rust-hwi.git && cd rust-hwi
+git clone https://github.com/MagicalBitcoin/rust-hwi.git && cd rust-hwi
 ```
 
 - Create a virtualenv:
 
 ```
-$ virtualenv -p python3 venv
-$ source venv/bin/activate
+virtualenv -p python3 venv
+source venv/bin/activate
 ```
 
 - Install all the dependencies using pip:
