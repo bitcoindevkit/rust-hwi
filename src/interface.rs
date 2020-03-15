@@ -182,7 +182,7 @@ impl HWIDevice {
 
     /// Returns an address given a descriptor.
     /// # Arguments
-    /// * `descriptor` - The descriptor to use.
+    /// * `descriptor` - The descriptor to use. HWI doesn't support descriptors checksums.
     /// * `testnet` - Whether to use testnet or not.
     pub fn display_address_with_desc(
         &self,

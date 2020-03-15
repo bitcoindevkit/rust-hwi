@@ -1,4 +1,24 @@
 //! Rust wrapper for [HWI](https://github.com/bitcoin-core/HWI/).
+//!
+//! # Example
+//! ```
+//! use hwi::{interface, types};
+//! use hwi::error::Error;
+//! use bitcoin::util::bip32::{ChildNumber, DerivationPath};
+//!
+//! fn main() -> Result<(), Error> {
+//!     let devices = interface::HWIDevice::enumerate()?;
+//!     let device = devices.first().unwrap();
+//!     let derivation_path = DerivationPath::from(vec![
+//!         ChildNumber::from_hardened_idx(44).unwrap(),
+//!         ChildNumber::from_normal_idx(0).unwrap(),
+//!     ]);
+//!
+//!     let hwi_address = device.display_address_with_path(&derivation_path, types::HWIAddressType::Pkh, true)?;
+//!     println!("{}", hwi_address.address);
+//!     Ok(())
+//! }
+//! ```
 
 #[macro_use]
 extern crate strum_macros;
@@ -6,6 +26,8 @@ extern crate strum_macros;
 #[cfg(test)]
 #[macro_use]
 extern crate serial_test;
+
+pub use interface::HWIDevice;
 
 pub mod commands;
 pub mod error;

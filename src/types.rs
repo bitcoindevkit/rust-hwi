@@ -8,7 +8,6 @@ pub struct HWIExtendedPubKey {
     pub xpub: ExtendedPubKey,
 }
 
-// TODO: is signature a String?
 #[derive(Deserialize)]
 pub struct HWISignature {
     pub signature: String,
