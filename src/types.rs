@@ -11,6 +11,14 @@ pub struct HWIExtendedPubKey {
     pub xpub: ExtendedPubKey,
 }
 
+impl Deref for HWIExtendedPubKey {
+    type Target = ExtendedPubKey;
+
+    fn deref(&self) -> &Self::Target {
+        &self.xpub
+    }
+}
+
 #[derive(Deserialize)]
 pub struct HWISignature {
     #[serde(deserialize_with="from_b64")]
