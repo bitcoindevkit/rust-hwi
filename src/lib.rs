@@ -42,7 +42,9 @@ mod tests {
     use crate::interface;
     use crate::types;
 
+    use bitcoin::consensus::deserialize;
     use bitcoin::util::bip32::{ChildNumber, DerivationPath};
+    use bitcoin::util::psbt::PartiallySignedTransaction;
 
     #[test]
     #[serial]
@@ -204,11 +206,25 @@ mod tests {
             .unwrap();
     }
 
-    // TODO:
-    // #[test]
-    // #[serial]
-    // fn test_sign_tx() {
-    // }
+    #[test]
+    #[serial]
+    fn test_sign_tx() {
+        let psbt = "cHNidP8BAHEBAAAAAaaVHw3iAcicnNY2+6U4C2KZvT4QUtRJ+8iRrkq2A7bgAQAAA\
+        AD9////AlDDAAAAAAAAFgAUOSUKaW5vVMrnlLAP+9jls1dZ4daPwAAAAAAAABYAFAg3N2d5GUtUe+jnFqf\
+        7Bt1aMhw0AAAAAAABAPUCAAAAAAEBCOSAnP+lWUf2Gg2HTarqvYKuKCJhrlJXswra5Rfz59MAAAAAFxYAF\
+        C93+I91yBEKeWJRg8B+7qIEFu7N/v///wK6bRcAAAAAABYAFMIiSx/RM/t6UXdOu0DhZI6bmux6oIYBAAA\
+        AAAAWABQSK7xZt6Pm5uy3sID9UUccOejeRgJHMEQCIFr5wJgP0yXfa8JepCAFOG0iCqtG1DCIrdbbVRK71\
+        mDgAiBzPEKJBt2mmjrWPeITiOp8Mj0OeU0hWKF11tD+wkIbqgEhAnSghcRbPiugkR+yu6P+qsdmNViVcBc\
+        UNTS/I83FGKsbNfIcAAEBH6CGAQAAAAAAFgAUEiu8Wbej5ubst7CA/VFHHDno3kYiBgP73cCLS8X7O3xYg\
+        hwT6yNmfMj5LxpQHSuwXzMxrLA34hjCWNLkVAAAgAEAAIAAAACAAAAAAAAAAAAAIgIC7kJ5LdbBfp0iOLk\
+        +f5ejCtVzC2P113MSwbiE/PE6PB0YwljS5FQAAIABAACAAAAAgAAAAAAJAAAAACICAntsamY11CucuHHsb\
+        qaW7G2Z3L+a7ZNwanWGcsYEvuqWGMJY0uRUAACAAQAAgAAAAIABAAAAAAAAAAA=";
+        let bytes = base64::decode(psbt).unwrap();
+        let psbt: PartiallySignedTransaction = deserialize(&bytes[..]).unwrap();
+        // println!("{:#?}", psbt.extract_tx());
+        let device = get_first_device();
+        device.sign_tx(&psbt, types::HWIChain::Test).unwrap();
+    }
 
     #[test]
     #[serial]

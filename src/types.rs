@@ -1,6 +1,7 @@
 use std::ops::Deref;
 
-use bitcoin::util::address::Address;
+use bitcoin::consensus::encode::deserialize;
+use bitcoin::util::{address::Address, psbt::PartiallySignedTransaction};
 use bitcoin::util::bip32::ExtendedPubKey;
 
 use serde::{Deserialize, Deserializer};
@@ -36,7 +37,22 @@ pub struct HWIAddress {
 
 #[derive(Deserialize)]
 pub struct HWIPartiallySignedTransaction {
-    pub psbt: String,
+    #[serde(deserialize_with="deserialize_psbt")]
+    pub psbt: PartiallySignedTransaction,
+}
+
+fn deserialize_psbt<'de, D: Deserializer<'de>>(d: D) -> Result<PartiallySignedTransaction, D::Error> {
+    let b64_string = String::deserialize(d)?;
+    let bytes = base64::decode(&b64_string).map_err(|e| serde::de::Error::custom(e))?;
+    deserialize::<PartiallySignedTransaction>(&bytes[..]).map_err(|e| serde::de::Error::custom(e))
+}
+
+impl Deref for HWIPartiallySignedTransaction {
+    type Target = PartiallySignedTransaction;
+
+    fn deref(&self) -> &Self::Target {
+        &self.psbt
+    }
 }
 
 // TODO: use Descriptors
