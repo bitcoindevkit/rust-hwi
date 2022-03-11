@@ -1,5 +1,3 @@
-use std::str::from_utf8;
-
 use bitcoin::consensus::encode::serialize;
 use bitcoin::util::bip32::{DerivationPath, Fingerprint};
 use bitcoin::util::psbt::PartiallySignedTransaction;
@@ -9,20 +7,39 @@ use base64;
 use serde::Deserialize;
 use serde_json::value::Value;
 
-use crate::commands::{HWICommand, HWIFlag, HWISubcommand};
 use crate::error::Error;
 use crate::types::{
     HWIAddress, HWIAddressType, HWIChain, HWIDescriptor, HWIExtendedPubKey, HWIKeyPoolElement,
     HWIPartiallySignedTransaction, HWISignature,
 };
 
+use pyo3::prelude::*;
+
 macro_rules! deserialize_obj {
     ( $e: expr ) => {{
-        let value: Value = serde_json::from_str(from_utf8($e)?)?;
+        let value: Value = serde_json::from_str($e)?;
         let obj = value.clone();
         serde_json::from_value(value)
             .map_err(|e| Error::HWIError(format!("Error {:?} while deserializing {:?}", e, obj)))
     }};
+}
+
+pub struct HWILib {
+    pub commands: Py<PyModule>,
+    pub json_dumps: Py<PyAny>,
+}
+
+impl HWILib {
+    pub fn initialize() -> Result<Self, Error> {
+        Python::with_gil(|py| {
+            let commands: Py<PyModule> = PyModule::import(py, "hwilib.commands")?.into();
+            let json_dumps: Py<PyAny> = PyModule::import(py, "json")?.getattr("dumps")?.into();
+            Ok(HWILib {
+                commands,
+                json_dumps,
+            })
+        })
+    }
 }
 
 #[derive(Clone, Deserialize)]
@@ -38,23 +55,48 @@ pub struct HWIDevice {
 
 impl HWIDevice {
     /// Lists all HW devices currently connected.
-    pub fn enumerate() -> Result<Vec<HWIDevice>, Error> {
-        let output = HWICommand::new()
-            .add_subcommand(HWISubcommand::Enumerate)
-            .execute()?;
-        deserialize_obj!(&output.stdout)
+    pub fn enumerate(libs: &HWILib) -> Result<Vec<HWIDevice>, Error> {
+        Python::with_gil(|py| {
+            let output = libs.commands.getattr(py, "enumerate")?.call0(py)?;
+            let output = libs.json_dumps.call1(py, (output,))?;
+            deserialize_obj!(&output.to_string())
+        })
+    }
+
+    pub fn find_device(
+        &self,
+        libs: &HWILib,
+        expert: bool,
+        chain: HWIChain,
+    ) -> Result<PyObject, Error> {
+        Python::with_gil(|py| {
+            let client_args = ("", py.None(), self.fingerprint.to_string(), expert, chain);
+            let client = libs
+                .commands
+                .getattr(py, "find_device")?
+                .call1(py, client_args)?;
+            Ok(client)
+        })
     }
 
     /// Returns the master xpub of a device.
     /// # Arguments
-    /// * `chain` - Specify which chain to use.
-    pub fn get_master_xpub(&self, chain: HWIChain) -> Result<HWIExtendedPubKey, Error> {
-        let output = HWICommand::new()
-            .add_flag(HWIFlag::Fingerprint(self.fingerprint))
-            .add_chain(chain)
-            .add_subcommand(HWISubcommand::GetMasterXpub)
-            .execute()?;
-        deserialize_obj!(&output.stdout)
+    /// * `testnet` - Whether to use testnet or not.
+    pub fn get_master_xpub(
+        &self,
+        client: &PyObject,
+        addrtype: HWIAddressType,
+        libs: &HWILib,
+        account: u32,
+    ) -> Result<HWIExtendedPubKey, Error> {
+        Python::with_gil(|py| {
+            let output = libs
+                .commands
+                .getattr(py, "getmasterxpub")?
+                .call1(py, (client, addrtype, account))?;
+            let output = libs.json_dumps.call1(py, (output,))?;
+            deserialize_obj!(&output.to_string())
+        })
     }
 
     /// Returns a psbt signed.
@@ -63,17 +105,19 @@ impl HWIDevice {
     /// * `chain` - Specify which chain to use.
     pub fn sign_tx(
         &self,
+        client: &PyObject,
         psbt: &PartiallySignedTransaction,
-        chain: HWIChain,
+        libs: &HWILib,
     ) -> Result<HWIPartiallySignedTransaction, Error> {
         let psbt = base64::encode(&serialize(psbt));
-        let output = HWICommand::new()
-            .add_flag(HWIFlag::Fingerprint(self.fingerprint))
-            .add_chain(chain)
-            .add_subcommand(HWISubcommand::SignTx)
-            .add_psbt(&psbt)
-            .execute()?;
-        deserialize_obj!(&output.stdout)
+        Python::with_gil(|py| {
+            let output = libs
+                .commands
+                .getattr(py, "signtx")?
+                .call1(py, (client, psbt))?;
+            let output = libs.json_dumps.call1(py, (output,))?;
+            deserialize_obj!(&output.to_string())
+        })
     }
 
     /// Returns the xpub of a device.
@@ -83,18 +127,17 @@ impl HWIDevice {
     /// * `expert` - Whether to provide more information or not.
     pub fn get_xpub(
         &self,
+        client: &PyObject,
         path: &DerivationPath,
+        libs: &HWILib,
         expert: bool,
-        chain: HWIChain,
     ) -> Result<HWIExtendedPubKey, Error> {
-        let output = HWICommand::new()
-            .add_flag(HWIFlag::Fingerprint(self.fingerprint))
-            .add_chain(chain)
-            .add_expert(expert)
-            .add_subcommand(HWISubcommand::GetXpub)
-            .add_path(path, false, false)
-            .execute()?;
-        deserialize_obj!(&output.stdout)
+        Python::with_gil(|py| {
+            let func_args = (client, path.to_string(), expert);
+            let output = libs.commands.getattr(py, "getxpub")?.call1(py, func_args)?;
+            let output = libs.json_dumps.call1(py, (output,))?;
+            deserialize_obj!(&output.to_string())
+        })
     }
 
     /// Signs a message.
@@ -104,18 +147,20 @@ impl HWIDevice {
     /// * `chain` - Specify which chain to use.
     pub fn sign_message(
         &self,
+        client: &PyObject,
         message: &str,
         path: &DerivationPath,
-        chain: HWIChain,
+        libs: &HWILib,
     ) -> Result<HWISignature, Error> {
-        let output = HWICommand::new()
-            .add_flag(HWIFlag::Fingerprint(self.fingerprint))
-            .add_chain(chain)
-            .add_subcommand(HWISubcommand::SignMessage)
-            .add_message(message)
-            .add_path(path, false, false)
-            .execute()?;
-        deserialize_obj!(&output.stdout)
+        Python::with_gil(|py| {
+            let func_args = (client, message, path.to_string());
+            let output = libs
+                .commands
+                .getattr(py, "signmessage")?
+                .call1(py, func_args)?;
+            let output = libs.json_dumps.call1(py, (output,))?;
+            deserialize_obj!(&output.to_string())
+        })
     }
 
     /// Returns an array of keys that can be imported in Bitcoin core using importmulti
@@ -131,34 +176,40 @@ impl HWIDevice {
     #[allow(clippy::too_many_arguments)]
     pub fn get_keypool(
         &self,
+        client: &PyObject,
         keypool: bool,
         internal: bool,
-        address_type: HWIAddressType,
+        addr_type: HWIAddressType,
+        addr_all: bool,
         account: Option<u32>,
         path: Option<&DerivationPath>,
         start: u32,
         end: u32,
-        chain: HWIChain,
+        libs: &HWILib,
     ) -> Result<Vec<HWIKeyPoolElement>, Error> {
-        let mut command = HWICommand::new();
-        command
-            .add_flag(HWIFlag::Fingerprint(self.fingerprint))
-            .add_chain(chain)
-            .add_subcommand(HWISubcommand::GetKeypool)
-            .add_keypool(keypool)
-            .add_internal(internal)
-            .add_address_type(address_type);
-
-        if let Some(a) = account {
-            command.add_account(a);
-        }
-
-        if let Some(p) = path {
-            command.add_path(p, true, true);
-        }
-
-        let output = command.add_start_end(start, end).execute()?;
-        deserialize_obj!(&output.stdout)
+        Python::with_gil(|py| {
+            let mut p_str = py.None();
+            if let Some(p) = path {
+                p_str = format!("{}/*", p.to_string()).into_py(py);
+            }
+            let func_args = (
+                client,
+                p_str,
+                start,
+                end,
+                internal,
+                keypool,
+                account.unwrap_or(0),
+                addr_type,
+                addr_all,
+            );
+            let output = libs
+                .commands
+                .getattr(py, "getkeypool")?
+                .call1(py, func_args)?;
+            let output = libs.json_dumps.call1(py, (output,))?;
+            deserialize_obj!(&output.to_string())
+        })
     }
 
     /// Returns device descriptors
@@ -167,21 +218,19 @@ impl HWIDevice {
     /// * `chain` - Specify which chain to use.
     pub fn get_descriptors(
         &self,
+        client: &PyObject,
         account: Option<u32>,
-        chain: HWIChain,
+        libs: &HWILib,
     ) -> Result<HWIDescriptor, Error> {
-        let mut command = HWICommand::new();
-        command
-            .add_flag(HWIFlag::Fingerprint(self.fingerprint))
-            .add_chain(chain)
-            .add_subcommand(HWISubcommand::GetDescriptors);
-
-        if let Some(a) = account {
-            command.add_account(a);
-        };
-
-        let output = command.execute()?;
-        deserialize_obj!(&output.stdout)
+        Python::with_gil(|py| {
+            let func_args = (client, account.unwrap_or(0));
+            let output = libs
+                .commands
+                .getattr(py, "getdescriptors")?
+                .call1(py, func_args)?;
+            let output = libs.json_dumps.call1(py, (output,))?;
+            deserialize_obj!(&output.to_string())
+        })
     }
 
     /// Returns an address given a descriptor.
@@ -190,16 +239,20 @@ impl HWIDevice {
     /// * `chain` - Specify which chain to use.
     pub fn display_address_with_desc(
         &self,
+        client: &PyObject,
         descriptor: &str,
-        chain: HWIChain,
+        libs: &HWILib,
     ) -> Result<HWIAddress, Error> {
-        let output = HWICommand::new()
-            .add_flag(HWIFlag::Fingerprint(self.fingerprint))
-            .add_chain(chain)
-            .add_subcommand(HWISubcommand::DisplayAddress)
-            .add_descriptor(descriptor)
-            .execute()?;
-        deserialize_obj!(&output.stdout)
+        Python::with_gil(|py| {
+            let path = py.None();
+            let func_args = (client, path, descriptor);
+            let output = libs
+                .commands
+                .getattr(py, "displayaddress")?
+                .call1(py, func_args)?;
+            let output = libs.json_dumps.call1(py, (output,))?;
+            deserialize_obj!(&output.to_string())
+        })
     }
 
     /// Returns an address given pat and address type
@@ -209,17 +262,20 @@ impl HWIDevice {
     /// * `chain` - Specify which chain to use.
     pub fn display_address_with_path(
         &self,
+        client: &PyObject,
         path: &DerivationPath,
         address_type: HWIAddressType,
-        chain: HWIChain,
+        libs: &HWILib,
     ) -> Result<HWIAddress, Error> {
-        let output = HWICommand::new()
-            .add_flag(HWIFlag::Fingerprint(self.fingerprint))
-            .add_chain(chain)
-            .add_subcommand(HWISubcommand::DisplayAddress)
-            .add_path(path, true, false)
-            .add_address_type(address_type)
-            .execute()?;
-        deserialize_obj!(&output.stdout)
+        Python::with_gil(|py| {
+            let descriptor = py.None();
+            let func_args = (client, path.to_string(), descriptor, address_type);
+            let output = libs
+                .commands
+                .getattr(py, "displayaddress")?
+                .call1(py, func_args)?;
+            let output = libs.json_dumps.call1(py, (output,))?;
+            deserialize_obj!(&output.to_string())
+        })
     }
 }
