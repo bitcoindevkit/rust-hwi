@@ -15,7 +15,7 @@ pub enum HWISubcommand {
     GetKeypool,
     GetDescriptors,
     DisplayAddress,
-    // TODO: Setup,
+    Setup,
     // TODO: Wipe,
     // TODO: Restore,
     // TODO: Backup,
@@ -186,6 +186,18 @@ impl HWICommand {
     pub fn add_start_end(&mut self, start: u32, end: u32) -> &mut Self {
         self.command
             .args(vec![format!("{}", start), format!("{}", end)]);
+        self
+    }
+
+    /// Adds a label (and `--label` flag) to a HWICommand
+    pub fn add_label(&mut self, label: &str) -> &mut Self {
+        self.command.args(vec!["--label", label]);
+        self
+    }
+
+    /// Adds a backup_passphrase (and `--backup_passphrase` flag) to a HWICommand
+    pub fn add_backup_passphrase(&mut self, backup_passphrase: &str) -> &mut Self {
+        self.command.args(vec!["--backup_passphrase", backup_passphrase]);
         self
     }
 

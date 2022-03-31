@@ -40,6 +40,11 @@ pub struct HWIKeyPoolElement {
     pub watchonly: bool,
 }
 
+#[derive(Deserialize)]
+pub struct HWISetup {
+    pub success: bool,
+}
+
 #[derive(Clone)]
 pub enum HWIAddressType {
     Pkh,

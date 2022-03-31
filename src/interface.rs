@@ -13,7 +13,7 @@ use crate::commands::{HWICommand, HWIFlag, HWISubcommand};
 use crate::error::Error;
 use crate::types::{
     HWIAddress, HWIAddressType, HWIDescriptor, HWIExtendedPubKey, HWIKeyPoolElement,
-    HWIPartiallySignedTransaction, HWISignature,
+    HWIPartiallySignedTransaction, HWISignature, HWISetup, 
 };
 
 macro_rules! deserialize_obj {
@@ -216,6 +216,27 @@ impl HWIDevice {
             .add_path(&path, true, false)
             .add_address_type(address_type)
             .execute()?;
+        deserialize_obj!(&output.stdout)
+    }
+
+    /// Used to setup a device that has not yet been initialized.
+    /// # Arguments
+    /// * `label` - Label to apply to the newly setup device.
+    /// * `backup_passphrase` - The passphrase to use for the backup, if applicable.
+    /// * `testnet` - Whether to use testnet or not.
+    pub fn setup_device(
+        &self,
+        label: &str,
+        backup_passphrase: &str,
+        testnet: bool,
+    ) -> Result<HWISetup, Error> {
+        let output = HWICommand::new()
+                .add_flag(HWIFlag::Fingerprint(self.fingerprint))
+                .add_testnet(testnet)
+                .add_subcommand(HWISubcommand::Setup)
+                .add_label(&label)
+                .add_backup_passphrase(&backup_passphrase)
+                .execute()?;
         deserialize_obj!(&output.stdout)
     }
 }
