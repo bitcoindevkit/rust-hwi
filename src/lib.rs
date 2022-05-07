@@ -187,7 +187,24 @@ mod tests {
     // TODO: Taproot Checksum fails
     // #[test]
     // #[serial]
-    // fn test_display_address_with_path_taproot() {}
+    #[allow(dead_code)]
+    fn test_display_address_with_path_taproot() {
+        let device = get_first_device();
+        let derivation_path = DerivationPath::from(vec![
+            ChildNumber::from_hardened_idx(86).unwrap(),
+            ChildNumber::from_hardened_idx(1).unwrap(),
+            ChildNumber::from_hardened_idx(0).unwrap(),
+            ChildNumber::from_normal_idx(0).unwrap(),
+            ChildNumber::from_normal_idx(0).unwrap(),
+        ]);
+        device
+            .display_address_with_path(
+                &derivation_path,
+                types::HWIAddressType::Tap,
+                types::HWIChain::Test,
+            )
+            .unwrap();
+    }
 
     #[test]
     #[serial]
