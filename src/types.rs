@@ -72,9 +72,19 @@ pub struct HWIKeyPoolElement {
     pub watchonly: bool,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
+#[allow(non_camel_case_types)]
 pub enum HWIAddressType {
-    Pkh,
-    ShWpkh,
-    Wpkh,
+    Legacy,
+    Sh_Wit,
+    Wit,
+    Tap,
+}
+
+#[derive(Debug)]
+pub enum HWIChain {
+    Main,
+    Test,
+    Regtest,
+    Signet,
 }

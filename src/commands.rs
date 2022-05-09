@@ -3,7 +3,7 @@ use std::process::{Command, Output};
 use bitcoin::util::bip32::{DerivationPath, Fingerprint};
 
 use crate::error::Error;
-use crate::types::HWIAddressType;
+use crate::types::{HWIAddressType, HWIChain};
 
 #[derive(Display)]
 pub enum HWISubcommand {
@@ -29,7 +29,8 @@ pub enum HWIFlag {
     DeviceType(String),
     Password(String),
     // TODO: StdinPass,
-    Testnet,
+    Chain(HWIChain),
+    AddrType(HWIAddressType),
     // TODO: Debug,
     Fingerprint(Fingerprint),
     // TODO: Version,
@@ -45,7 +46,14 @@ impl HWIFlag {
             HWIFlag::DeviceType(t) => vec![String::from("--device-type"), format!("{}", t)],
             HWIFlag::Password(p) => vec![String::from("--password"), format!("{}", p)],
             HWIFlag::Fingerprint(f) => vec![String::from("--fingerprint"), format!("{}", f)],
-            _ => vec![format!("--{:?}", self).to_lowercase()],
+            HWIFlag::Chain(chain) => vec![
+                String::from("--chain"),
+                format!("{:?}", chain).to_lowercase(),
+            ],
+            HWIFlag::AddrType(a) => vec![
+                String::from("--addr-type"),
+                format!("{:?}", a).to_lowercase(),
+            ],
         }
     }
 }
@@ -86,11 +94,12 @@ impl HWICommand {
     /// # Examples
     /// ```
     /// use hwi::commands::{HWICommand, HWIFlag, HWISubcommand};
+    /// use hwi::types::HWIChain;
     ///
     /// let mut command = HWICommand::new();
     /// command
     ///     .add_subcommand(HWISubcommand::Enumerate)
-    ///     .add_flag(HWIFlag::Testnet);
+    ///     .add_flag(HWIFlag::Chain(HWIChain::Test));
     /// ```
     pub fn add_flag(&mut self, f: HWIFlag) -> &mut Self {
         self.command.args(f.to_args_vec());
@@ -148,15 +157,7 @@ impl HWICommand {
 
     /// Adds the address type flag to a HWICommand
     pub fn add_address_type(&mut self, address_type: HWIAddressType) -> &mut Self {
-        match address_type {
-            HWIAddressType::ShWpkh => {
-                self.command.arg("--sh_wpkh");
-            }
-            HWIAddressType::Wpkh => {
-                self.command.arg("--wpkh");
-            }
-            _ => {}
-        };
+        self.add_flag(HWIFlag::AddrType(address_type));
         self
     }
 
@@ -189,11 +190,9 @@ impl HWICommand {
         self
     }
 
-    /// Adds testnet flag to a HWICommand
-    pub fn add_testnet(&mut self, testnet: bool) -> &mut Self {
-        if testnet {
-            self.add_flag(HWIFlag::Testnet);
-        }
+    /// Adds chain flag and arguements to a HWICommand
+    pub fn add_chain(&mut self, chain: HWIChain) -> &mut Self {
+        self.add_flag(HWIFlag::Chain(chain));
         self
     }
 

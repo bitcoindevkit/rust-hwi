@@ -12,7 +12,7 @@ use serde_json::value::Value;
 use crate::commands::{HWICommand, HWIFlag, HWISubcommand};
 use crate::error::Error;
 use crate::types::{
-    HWIAddress, HWIAddressType, HWIDescriptor, HWIExtendedPubKey, HWIKeyPoolElement,
+    HWIAddress, HWIAddressType, HWIChain, HWIDescriptor, HWIExtendedPubKey, HWIKeyPoolElement,
     HWIPartiallySignedTransaction, HWISignature,
 };
 
@@ -48,10 +48,10 @@ impl HWIDevice {
     /// Returns the master xpub of a device.
     /// # Arguments
     /// * `testnet` - Whether to use testnet or not.
-    pub fn get_master_xpub(&self, testnet: bool) -> Result<HWIExtendedPubKey, Error> {
+    pub fn get_master_xpub(&self, chain: HWIChain) -> Result<HWIExtendedPubKey, Error> {
         let output = HWICommand::new()
             .add_flag(HWIFlag::Fingerprint(self.fingerprint))
-            .add_testnet(testnet)
+            .add_chain(chain)
             .add_subcommand(HWISubcommand::GetMasterXpub)
             .execute()?;
         deserialize_obj!(&output.stdout)
@@ -64,12 +64,12 @@ impl HWIDevice {
     pub fn sign_tx(
         &self,
         psbt: &PartiallySignedTransaction,
-        testnet: bool,
+        chain: HWIChain,
     ) -> Result<HWIPartiallySignedTransaction, Error> {
         let psbt = base64::encode(&serialize(psbt));
         let output = HWICommand::new()
             .add_flag(HWIFlag::Fingerprint(self.fingerprint))
-            .add_testnet(testnet)
+            .add_chain(chain)
             .add_subcommand(HWISubcommand::SignTx)
             .add_psbt(&psbt)
             .execute()?;
@@ -83,11 +83,11 @@ impl HWIDevice {
     pub fn get_xpub(
         &self,
         path: &DerivationPath,
-        testnet: bool,
+        chain: HWIChain,
     ) -> Result<HWIExtendedPubKey, Error> {
         let output = HWICommand::new()
             .add_flag(HWIFlag::Fingerprint(self.fingerprint))
-            .add_testnet(testnet)
+            .add_chain(chain)
             .add_subcommand(HWISubcommand::GetXpub)
             .add_path(&path, false, false)
             .execute()?;
@@ -103,11 +103,11 @@ impl HWIDevice {
         &self,
         message: &str,
         path: &DerivationPath,
-        testnet: bool,
+        chain: HWIChain,
     ) -> Result<HWISignature, Error> {
         let output = HWICommand::new()
             .add_flag(HWIFlag::Fingerprint(self.fingerprint))
-            .add_testnet(testnet)
+            .add_chain(chain)
             .add_subcommand(HWISubcommand::SignMessage)
             .add_message(&message)
             .add_path(&path, false, false)
@@ -134,12 +134,12 @@ impl HWIDevice {
         path: Option<&DerivationPath>,
         start: u32,
         end: u32,
-        testnet: bool,
+        chain: HWIChain,
     ) -> Result<Vec<HWIKeyPoolElement>, Error> {
         let mut command = HWICommand::new();
         command
             .add_flag(HWIFlag::Fingerprint(self.fingerprint))
-            .add_testnet(testnet)
+            .add_chain(chain)
             .add_subcommand(HWISubcommand::GetKeypool)
             .add_keypool(keypool)
             .add_internal(internal)
@@ -164,12 +164,12 @@ impl HWIDevice {
     pub fn get_descriptors(
         &self,
         account: Option<u32>,
-        testnet: bool,
+        chain: HWIChain,
     ) -> Result<HWIDescriptor, Error> {
         let mut command = HWICommand::new();
         command
             .add_flag(HWIFlag::Fingerprint(self.fingerprint))
-            .add_testnet(testnet)
+            .add_chain(chain)
             .add_subcommand(HWISubcommand::GetDescriptors);
 
         if let Some(a) = account {
@@ -187,11 +187,11 @@ impl HWIDevice {
     pub fn display_address_with_desc(
         &self,
         descriptor: &str,
-        testnet: bool,
+        chain: HWIChain,
     ) -> Result<HWIAddress, Error> {
         let output = HWICommand::new()
             .add_flag(HWIFlag::Fingerprint(self.fingerprint))
-            .add_testnet(testnet)
+            .add_chain(chain)
             .add_subcommand(HWISubcommand::DisplayAddress)
             .add_descriptor(&descriptor)
             .execute()?;
@@ -207,11 +207,11 @@ impl HWIDevice {
         &self,
         path: &DerivationPath,
         address_type: HWIAddressType,
-        testnet: bool,
+        chain: HWIChain,
     ) -> Result<HWIAddress, Error> {
         let output = HWICommand::new()
             .add_flag(HWIFlag::Fingerprint(self.fingerprint))
-            .add_testnet(testnet)
+            .add_chain(chain)
             .add_subcommand(HWISubcommand::DisplayAddress)
             .add_path(&path, true, false)
             .add_address_type(address_type)
