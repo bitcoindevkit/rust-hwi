@@ -1,4 +1,4 @@
-use bitcoin::util::address::Address;
+use bitcoin::util::{address::Address, psbt::PartiallySignedTransaction};
 use bitcoin::util::bip32::ExtendedPubKey;
 
 use std::ops::Deref;
@@ -36,7 +36,15 @@ pub struct HWIAddress {
 
 #[derive(Deserialize)]
 pub struct HWIPartiallySignedTransaction {
-    pub psbt: String,
+    pub psbt: PartiallySignedTransaction,
+}
+
+impl Deref for HWIPartiallySignedTransaction {
+    type Target = PartiallySignedTransaction;
+
+    fn deref(&self) -> &Self::Target {
+        &self.psbt
+    }
 }
 
 // TODO: use Descriptors
