@@ -1,16 +1,40 @@
-use bitcoin::util::address::Address;
+use bitcoin::util::{address::Address, psbt::PartiallySignedTransaction};
 use bitcoin::util::bip32::ExtendedPubKey;
 
-use serde::Deserialize;
+use std::ops::Deref;
+use serde::{Deserialize, Deserializer};
 
 #[derive(Deserialize)]
 pub struct HWIExtendedPubKey {
     pub xpub: ExtendedPubKey,
 }
 
+impl Deref for HWIExtendedPubKey {
+    type Target = ExtendedPubKey;
+
+    fn deref(&self) -> &Self::Target {
+        &self.xpub
+    }
+}
+
 #[derive(Deserialize)]
 pub struct HWISignature {
-    pub signature: String,
+    #[serde(deserialize_with = "from_b64")]
+    pub signature: Vec<u8>,
+}
+
+fn from_b64<'de, D: Deserializer<'de>>(d: D) -> Result<Vec<u8>, D::Error> {
+    let b64_string = String::deserialize(d)?;
+    base64::decode(&b64_string)
+        .map_err(|_| serde::de::Error::custom("Error while Deserializing Signature"))
+}
+
+impl Deref for HWISignature {
+    type Target = Vec<u8>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.signature
+    }
 }
 
 #[derive(Deserialize)]
@@ -20,7 +44,15 @@ pub struct HWIAddress {
 
 #[derive(Deserialize)]
 pub struct HWIPartiallySignedTransaction {
-    pub psbt: String,
+    pub psbt: PartiallySignedTransaction,
+}
+
+impl Deref for HWIPartiallySignedTransaction {
+    type Target = PartiallySignedTransaction;
+
+    fn deref(&self) -> &Self::Target {
+        &self.psbt
+    }
 }
 
 // TODO: use Descriptors
@@ -40,9 +72,19 @@ pub struct HWIKeyPoolElement {
     pub watchonly: bool,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
+#[allow(non_camel_case_types)]
 pub enum HWIAddressType {
-    Pkh,
-    ShWpkh,
-    Wpkh,
+    Legacy,
+    Sh_Wit,
+    Wit,
+    Tap,
+}
+
+#[derive(Debug)]
+pub enum HWIChain {
+    Main,
+    Test,
+    Regtest,
+    Signet,
 }
