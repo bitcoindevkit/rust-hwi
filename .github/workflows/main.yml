@@ -1,0 +1,30 @@
+
+name: CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - run: cargo build
+    - uses: actions-rs/clippy-check@v1
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        args: --all-features
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - run: docker pull docker.io/wszdexdrf/trezor_emulator
+    - run: docker run --name simulator wszdexdrf/trezor_emulator &
+    - run: docker cp ./ simulator:/rust-hwi/
+    - run: docker exec -w /rust-hwi simulator cargo test
