@@ -47,7 +47,7 @@ impl HWIDevice {
 
     /// Returns the master xpub of a device.
     /// # Arguments
-    /// * `testnet` - Whether to use testnet or not.
+    /// * `chain` - Specify which chain to use.
     pub fn get_master_xpub(&self, chain: HWIChain) -> Result<HWIExtendedPubKey, Error> {
         let output = HWICommand::new()
             .add_flag(HWIFlag::Fingerprint(self.fingerprint))
@@ -60,7 +60,7 @@ impl HWIDevice {
     /// Returns a psbt signed.
     /// # Arguments
     /// * `psbt` - The PSBT to be signed.
-    /// * `testnet` - Whether to use testnet or not.
+    /// * `chain` - Specify which chain to use.
     pub fn sign_tx(
         &self,
         psbt: &PartiallySignedTransaction,
@@ -79,7 +79,7 @@ impl HWIDevice {
     /// Returns the xpub of a device.
     /// # Arguments
     /// * `path` - The derivation path to derive the key.
-    /// * `testnet` - Whether to use testnet or not.
+    /// * `chain` - Specify which chain to use.
     pub fn get_xpub(
         &self,
         path: &DerivationPath,
@@ -98,7 +98,7 @@ impl HWIDevice {
     /// # Arguments
     /// * `message` - The message to sign.
     /// * `path` - The derivation path to derive the key.
-    /// * `testnet` - Whether to use testnet or not.
+    /// * `chain` - Specify which chain to use.
     pub fn sign_message(
         &self,
         message: &str,
@@ -124,7 +124,7 @@ impl HWIDevice {
     /// * `path` - The derivation path to derive the keys.
     /// * `start` - Keypool start
     /// * `end` - Keypool end
-    /// * `testnet` - Whether to use testnet or not.
+    /// * `chain` - Specify which chain to use.
     #[allow(clippy::too_many_arguments)]
     pub fn get_keypool(
         &self,
@@ -161,7 +161,7 @@ impl HWIDevice {
     /// Returns device descriptors
     /// # Arguments
     /// * `account` - Optional BIP43 account to use.
-    /// * `testnet` - Whether to use testnet or not.
+    /// * `chain` - Specify which chain to use.
     pub fn get_descriptors(
         &self,
         account: Option<u32>,
@@ -184,7 +184,7 @@ impl HWIDevice {
     /// Returns an address given a descriptor.
     /// # Arguments
     /// * `descriptor` - The descriptor to use. HWI doesn't support descriptors checksums.
-    /// * `testnet` - Whether to use testnet or not.
+    /// * `chain` - Specify which chain to use.
     pub fn display_address_with_desc(
         &self,
         descriptor: &str,
@@ -203,7 +203,7 @@ impl HWIDevice {
     /// # Arguments
     /// * `path` - The derivation path to use.
     /// * `address_type` - Address type to use.
-    /// * `testnet` - Whether to use testnet or not.
+    /// * `chain` - Specify which chain to use.
     pub fn display_address_with_path(
         &self,
         path: &DerivationPath,
