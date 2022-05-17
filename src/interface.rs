@@ -89,7 +89,7 @@ impl HWIDevice {
             .add_flag(HWIFlag::Fingerprint(self.fingerprint))
             .add_chain(chain)
             .add_subcommand(HWISubcommand::GetXpub)
-            .add_path(&path, false, false)
+            .add_path(path, false, false)
             .execute()?;
         deserialize_obj!(&output.stdout)
     }
@@ -109,8 +109,8 @@ impl HWIDevice {
             .add_flag(HWIFlag::Fingerprint(self.fingerprint))
             .add_chain(chain)
             .add_subcommand(HWISubcommand::SignMessage)
-            .add_message(&message)
-            .add_path(&path, false, false)
+            .add_message(message)
+            .add_path(path, false, false)
             .execute()?;
         deserialize_obj!(&output.stdout)
     }
@@ -125,6 +125,7 @@ impl HWIDevice {
     /// * `start` - Keypool start
     /// * `end` - Keypool end
     /// * `testnet` - Whether to use testnet or not.
+    #[allow(clippy::too_many_arguments)]
     pub fn get_keypool(
         &self,
         keypool: bool,
@@ -150,7 +151,7 @@ impl HWIDevice {
         }
 
         if let Some(p) = path {
-            command.add_path(&p, true, true);
+            command.add_path(p, true, true);
         }
 
         let output = command.add_start_end(start, end).execute()?;
@@ -193,7 +194,7 @@ impl HWIDevice {
             .add_flag(HWIFlag::Fingerprint(self.fingerprint))
             .add_chain(chain)
             .add_subcommand(HWISubcommand::DisplayAddress)
-            .add_descriptor(&descriptor)
+            .add_descriptor(descriptor)
             .execute()?;
         deserialize_obj!(&output.stdout)
     }
@@ -213,7 +214,7 @@ impl HWIDevice {
             .add_flag(HWIFlag::Fingerprint(self.fingerprint))
             .add_chain(chain)
             .add_subcommand(HWISubcommand::DisplayAddress)
-            .add_path(&path, true, false)
+            .add_path(path, true, false)
             .add_address_type(address_type)
             .execute()?;
         deserialize_obj!(&output.stdout)

@@ -42,10 +42,10 @@ impl HWIFlag {
     /// Returns a vector of args from a flag
     fn to_args_vec(&self) -> Vec<String> {
         match self {
-            HWIFlag::DevicePath(p) => vec![String::from("--device-path"), format!("{}", p)],
-            HWIFlag::DeviceType(t) => vec![String::from("--device-type"), format!("{}", t)],
-            HWIFlag::Password(p) => vec![String::from("--password"), format!("{}", p)],
-            HWIFlag::Fingerprint(f) => vec![String::from("--fingerprint"), format!("{}", f)],
+            HWIFlag::DevicePath(p) => vec![String::from("--device-path"), p.to_string()],
+            HWIFlag::DeviceType(t) => vec![String::from("--device-type"), t.to_string()],
+            HWIFlag::Password(p) => vec![String::from("--password"), p.to_string()],
+            HWIFlag::Fingerprint(f) => vec![String::from("--fingerprint"), f.to_string()],
             HWIFlag::Chain(chain) => vec![
                 String::from("--chain"),
                 format!("{:?}", chain).to_lowercase(),
@@ -61,6 +61,12 @@ impl HWIFlag {
 #[derive(Debug)]
 pub struct HWICommand {
     command: Command,
+}
+
+impl Default for HWICommand {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl HWICommand {
