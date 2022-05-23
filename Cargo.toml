@@ -10,11 +10,11 @@ repository = "https://github.com/MagicalBitcoin/rust-hwi"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-bitcoin = { version = "0.25", features = ["use-serde", "base64"] }
+bitcoin = { version = "0.28", features = ["use-serde", "base64"] }
 serde = { version = "^1.0", features = ["derive"] }
 serde_json = { version = "^1.0" }
-strum_macros = "0.18.0"
-base64 = "^0.11"
+strum_macros = "0.24.0"
+base64 = "^0.13.0"
 
 [dev-dependencies]
-serial_test = "0.4.0"
+serial_test = "0.6.0"
