@@ -8,10 +8,20 @@
 //! use std::str::FromStr;
 //!
 //! fn main() -> Result<(), Error> {
-//!     let devices = interface::HWIDevice::enumerate()?;
-//!     let device = devices.first().unwrap();
-//!     let derivation_path = DerivationPath::from_str("m/44h/1h/0h/0/0").unwrap();
-//!     let hwi_address = device.display_address_with_path(&derivation_path, types::HWIAddressType::Legacy, types::HWIChain::Test)?;
+//!     // Initialize the Python libraries
+//!     let lib = interface::HWILib::initialize().unwrap();
+//!     // Find a reference for your device
+//!     let device = interface::HWIDevice::enumerate(&lib).unwrap().first().expect("No devices").clone();
+//!     let client = device.find_device(true, types::HWIChain::Test, &lib).unwrap();;
+//!     let derivation_path = DerivationPath::from_str("m/44'/1'/0'/0/0").unwrap();
+//!     let hwi_address = device
+//!     .display_address_with_path(
+//!         &client,
+//!         &derivation_path,
+//!         types::HWIAddressType::Legacy,
+//!         &lib,
+//!     )
+//!     .unwrap();
 //!     println!("{}", hwi_address.address);
 //!     Ok(())
 //! }
@@ -52,7 +62,7 @@ mod tests {
             .expect("No devices")
             .clone();
         let dev = hwidev
-            .find_device(lib, true, types::HWIChain::Test)
+            .find_device(true, types::HWIChain::Test, lib)
             .unwrap();
         (hwidev, dev)
     }
@@ -63,7 +73,7 @@ mod tests {
         let lib = HWILib::initialize().unwrap();
         let (device, client) = get_first_device(&lib);
         device
-            .get_master_xpub(&client, types::HWIAddressType::Wit, &lib, 0)
+            .get_master_xpub(&client, types::HWIAddressType::Wit, 0, &lib)
             .unwrap();
     }
 
@@ -74,7 +84,7 @@ mod tests {
         let (device, client) = get_first_device(&lib);
         let derivation_path = DerivationPath::from_str("m/44'/1'/0'/0/0").unwrap();
         device
-            .get_xpub(&client, &derivation_path, &lib, false)
+            .get_xpub(&client, &derivation_path, false, &lib)
             .unwrap();
     }
 
@@ -86,7 +96,7 @@ mod tests {
         let derivation_path = DerivationPath::from_str("m/44'/1'/0'/0/0").unwrap();
 
         device
-            .get_xpub(&client, &derivation_path, &lib, false)
+            .get_xpub(&client, &derivation_path, false, &lib)
             .unwrap();
     }
 

@@ -24,6 +24,7 @@ macro_rules! deserialize_obj {
     }};
 }
 
+/// Convenience class containing required Python objects
 pub struct HWILib {
     pub commands: Py<PyModule>,
     pub json_dumps: Py<PyAny>,
@@ -63,11 +64,16 @@ impl HWIDevice {
         })
     }
 
+    /// Finds the Python object of the device corresponding to `Self`
+    /// # Arguements
+    /// * `expert` - Whether the device should be opened in expert mode (enables additional output for some actions)
+    /// * `chain` - The Chain this client will be using
+    /// * `libs` - HWILib instance
     pub fn find_device(
         &self,
-        libs: &HWILib,
         expert: bool,
         chain: HWIChain,
+        libs: &HWILib,
     ) -> Result<PyObject, Error> {
         Python::with_gil(|py| {
             let client_args = ("", py.None(), self.fingerprint.to_string(), expert, chain);
@@ -81,13 +87,14 @@ impl HWIDevice {
 
     /// Returns the master xpub of a device.
     /// # Arguments
-    /// * `testnet` - Whether to use testnet or not.
+    /// * `client` - The (Python) client to interact with
+    /// * `libs` - HWILib instance
     pub fn get_master_xpub(
         &self,
         client: &PyObject,
         addrtype: HWIAddressType,
-        libs: &HWILib,
         account: u32,
+        libs: &HWILib,
     ) -> Result<HWIExtendedPubKey, Error> {
         Python::with_gil(|py| {
             let output = libs
@@ -101,8 +108,9 @@ impl HWIDevice {
 
     /// Returns a psbt signed.
     /// # Arguments
+    /// * `client` - The (Python) client to interact with
     /// * `psbt` - The PSBT to be signed.
-    /// * `chain` - Specify which chain to use.
+    /// * `libs` - HWILib instance
     pub fn sign_tx(
         &self,
         client: &PyObject,
@@ -123,14 +131,15 @@ impl HWIDevice {
     /// Returns the xpub of a device.
     /// # Arguments
     /// * `path` - The derivation path to derive the key.
-    /// * `chain` - Specify which chain to use.
-    /// * `expert` - Whether to provide more information or not.
+    /// * `client` - The (Python) client to interact with
+    /// * `expert` - Whether the device should be opened in expert mode (enables additional output for some actions)
+    /// * `libs` - HWILib instance
     pub fn get_xpub(
         &self,
         client: &PyObject,
         path: &DerivationPath,
-        libs: &HWILib,
         expert: bool,
+        libs: &HWILib,
     ) -> Result<HWIExtendedPubKey, Error> {
         Python::with_gil(|py| {
             let func_args = (client, path.to_string(), expert);
@@ -142,9 +151,10 @@ impl HWIDevice {
 
     /// Signs a message.
     /// # Arguments
+    /// * `client` - The (Python) client to interact with
     /// * `message` - The message to sign.
     /// * `path` - The derivation path to derive the key.
-    /// * `chain` - Specify which chain to use.
+    /// * `libs` - HWILib instance
     pub fn sign_message(
         &self,
         client: &PyObject,
@@ -165,14 +175,16 @@ impl HWIDevice {
 
     /// Returns an array of keys that can be imported in Bitcoin core using importmulti
     /// # Arguments
+    /// * `client` - The (Python) client to interact with
     /// * `keypool` - `keypool` value in result. Check bitcoin core importmulti documentation for further information
     /// * `internal` - Whether to use internal (change) or external keys
-    /// * `address type` - HWIAddressType to use
+    /// * `addr_type` - HWIAddressType to use
+    /// * `addr_all` - Whether to return a multiple descriptors for every address type
     /// * `account` - Optional BIP43 account to use
     /// * `path` - The derivation path to derive the keys.
     /// * `start` - Keypool start
     /// * `end` - Keypool end
-    /// * `chain` - Specify which chain to use.
+    /// * `libs` - HWILib instance
     #[allow(clippy::too_many_arguments)]
     pub fn get_keypool(
         &self,
@@ -190,7 +202,7 @@ impl HWIDevice {
         Python::with_gil(|py| {
             let mut p_str = py.None();
             if let Some(p) = path {
-                p_str = format!("{}/*", p.to_string()).into_py(py);
+                p_str = format!("{}/*", p).into_py(py);
             }
             let func_args = (
                 client,
@@ -214,8 +226,9 @@ impl HWIDevice {
 
     /// Returns device descriptors
     /// # Arguments
+    /// * `client` - The (Python) client to interact with
     /// * `account` - Optional BIP43 account to use.
-    /// * `chain` - Specify which chain to use.
+    /// * `libs` - HWILib instance
     pub fn get_descriptors(
         &self,
         client: &PyObject,
@@ -235,8 +248,9 @@ impl HWIDevice {
 
     /// Returns an address given a descriptor.
     /// # Arguments
+    /// * `client` - The (Python) client to interact with
     /// * `descriptor` - The descriptor to use. HWI doesn't support descriptors checksums.
-    /// * `chain` - Specify which chain to use.
+    /// * `libs` - HWILib instance
     pub fn display_address_with_desc(
         &self,
         client: &PyObject,
@@ -257,9 +271,10 @@ impl HWIDevice {
 
     /// Returns an address given pat and address type
     /// # Arguments
+    /// * `client` - The (Python) client to interact with
     /// * `path` - The derivation path to use.
     /// * `address_type` - Address type to use.
-    /// * `chain` - Specify which chain to use.
+    /// * `libs` - HWILib instance
     pub fn display_address_with_path(
         &self,
         client: &PyObject,
