@@ -1,6 +1,6 @@
 use std::ops::Deref;
 
-use bitcoin::util::bip32::ExtendedPubKey;
+use bitcoin::util::bip32::{ExtendedPubKey, Fingerprint};
 use bitcoin::util::{address::Address, psbt::PartiallySignedTransaction};
 
 use pyo3::types::PyModule;
@@ -99,7 +99,7 @@ impl IntoPy<PyObject> for HWIAddressType {
     }
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub enum HWIChain {
     Main,
     Test,
@@ -119,4 +119,15 @@ impl IntoPy<PyObject> for HWIChain {
             HWIChain::Signet => chain.get_item("SIGNET").unwrap().into(),
         }
     }
+}
+
+#[derive(Clone, Deserialize)]
+pub struct HWIDevice {
+    #[serde(rename(deserialize = "type"))]
+    pub device_type: String,
+    pub model: String,
+    pub path: String,
+    pub needs_pin_sent: bool,
+    pub needs_passphrase_sent: bool,
+    pub fingerprint: Fingerprint,
 }

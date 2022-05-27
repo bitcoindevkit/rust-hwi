@@ -2,24 +2,22 @@
 //!
 //! # Example
 //! ```
-//! use hwi::{interface, types};
+//! use hwi::interface::HWIClient;
+//! use hwi::types;
 //! use hwi::error::Error;
 //! use bitcoin::util::bip32::{ChildNumber, DerivationPath};
 //! use std::str::FromStr;
 //!
 //! fn main() -> Result<(), Error> {
-//!     // Initialize the Python libraries
-//!     let lib = interface::HWILib::initialize().unwrap();
-//!     // Find a reference for your device
-//!     let device = interface::HWIDevice::enumerate(&lib).unwrap().first().expect("No devices").clone();
-//!     let client = device.find_device(true, types::HWIChain::Test, &lib).unwrap();;
+//!     // Find information about devices
+//!     let devices = HWIClient::enumerate()?;
+//!     let device = devices.first().expect("No devices");
+//!     // Create a client for a device
+//!     let client = HWIClient::get_client(&device, true, types::HWIChain::Test).unwrap();
 //!     let derivation_path = DerivationPath::from_str("m/44'/1'/0'/0/0").unwrap();
-//!     let hwi_address = device
-//!     .display_address_with_path(
-//!         &client,
+//!     let hwi_address = client.display_address_with_path(
 //!         &derivation_path,
 //!         types::HWIAddressType::Legacy,
-//!         &lib,
 //!     )
 //!     .unwrap();
 //!     println!("{}", hwi_address.address);
@@ -31,7 +29,7 @@
 #[macro_use]
 extern crate serial_test;
 
-pub use interface::HWIDevice;
+pub use interface::HWIClient;
 
 pub mod error;
 pub mod interface;
@@ -39,90 +37,61 @@ pub mod types;
 
 #[cfg(test)]
 mod tests {
-    use crate::interface::HWILib;
     use crate::types;
-    use crate::HWIDevice;
+    use crate::HWIClient;
     use std::str::FromStr;
 
     use bitcoin::util::bip32::DerivationPath;
-    use pyo3::PyObject;
 
     #[test]
     #[serial]
     fn test_enumerate() {
-        let lib = HWILib::initialize().unwrap();
-        let devices = HWIDevice::enumerate(&lib).unwrap();
+        let devices = HWIClient::enumerate().unwrap();
         assert!(devices.len() > 0);
     }
 
-    fn get_first_device(lib: &HWILib) -> (HWIDevice, PyObject) {
-        let hwidev = HWIDevice::enumerate(lib)
-            .unwrap()
-            .first()
-            .expect("No devices")
-            .clone();
-        let dev = hwidev
-            .find_device(true, types::HWIChain::Test, lib)
-            .unwrap();
-        (hwidev, dev)
+    fn get_first_device() -> HWIClient {
+        HWIClient::get_client(
+            HWIClient::enumerate().unwrap().first().expect("No devices"),
+            true,
+            types::HWIChain::Test,
+        )
+        .unwrap()
     }
 
     #[test]
     #[serial]
     fn test_get_master_xpub() {
-        let lib = HWILib::initialize().unwrap();
-        let (device, client) = get_first_device(&lib);
-        device
-            .get_master_xpub(&client, types::HWIAddressType::Wit, 0, &lib)
+        let client = get_first_device();
+        client
+            .get_master_xpub(types::HWIAddressType::Wit, 0)
             .unwrap();
     }
 
     #[test]
     #[serial]
     fn test_get_xpub() {
-        let lib = HWILib::initialize().unwrap();
-        let (device, client) = get_first_device(&lib);
+        let client = get_first_device();
         let derivation_path = DerivationPath::from_str("m/44'/1'/0'/0/0").unwrap();
-        device
-            .get_xpub(&client, &derivation_path, false, &lib)
-            .unwrap();
-    }
-
-    #[test]
-    #[serial]
-    fn test_get_xpub_with_expert_flag_set() {
-        let lib = HWILib::initialize().unwrap();
-        let (device, client) = get_first_device(&lib);
-        let derivation_path = DerivationPath::from_str("m/44'/1'/0'/0/0").unwrap();
-
-        device
-            .get_xpub(&client, &derivation_path, false, &lib)
-            .unwrap();
+        client.get_xpub(&derivation_path, false).unwrap();
     }
 
     #[test]
     #[serial]
     fn test_sign_message() {
-        let lib = HWILib::initialize().unwrap();
-        let (device, client) = get_first_device(&lib);
+        let client = get_first_device();
         let derivation_path = DerivationPath::from_str("m/44'/1'/0'/0/0").unwrap();
-        device
-            .sign_message(
-                &client,
-                "I love magical bitcoin wallet",
-                &derivation_path,
-                &lib,
-            )
+        client
+            .sign_message("I love BDK wallet", &derivation_path)
             .unwrap();
     }
 
     #[test]
     #[serial]
     fn test_get_descriptors() {
-        let lib = HWILib::initialize().unwrap();
-        let (device, client) = get_first_device(&lib);
+        let client = get_first_device();
         let account = Some(10);
-        let descriptor = device.get_descriptors(&client, account, &lib).unwrap();
+        let descriptor = client.get_descriptors(account).unwrap();
         assert!(descriptor.internal.len() > 0);
         assert!(descriptor.receive.len() > 0);
     }
@@ -130,61 +99,44 @@ mod tests {
     #[test]
     #[serial]
     fn test_display_address_with_desc() {
-        let lib = HWILib::initialize().unwrap();
-        let (device, client) = get_first_device(&lib);
-        println!("{}", client);
-        let descriptor = device.get_descriptors(&client, None, &lib).unwrap();
+        let client = get_first_device();
+        let descriptor = client.get_descriptors(None).unwrap();
         let descriptor = descriptor.receive.first().unwrap();
         // Seems like hwi doesn't support descriptors checksums
         let descriptor = &descriptor.split("#").collect::<Vec<_>>()[0].to_string();
         let descriptor = &descriptor.replace("*", "1"); // e.g. /0/* -> /0/1
-        device
-            .display_address_with_desc(&client, &descriptor, &lib)
-            .unwrap();
+        client.display_address_with_desc(&descriptor).unwrap();
     }
 
     #[test]
     #[serial]
     fn test_display_address_with_path_legacy() {
-        let lib = HWILib::initialize().unwrap();
-        let (device, client) = get_first_device(&lib);
+        let client = get_first_device();
         let derivation_path = DerivationPath::from_str("m/44'/1'/0'/0/0").unwrap();
-        device
-            .display_address_with_path(
-                &client,
-                &derivation_path,
-                types::HWIAddressType::Legacy,
-                &lib,
-            )
+        client
+            .display_address_with_path(&derivation_path, types::HWIAddressType::Legacy)
             .unwrap();
     }
 
     #[test]
     #[serial]
     fn test_display_address_with_path_nested_segwit() {
-        let lib = HWILib::initialize().unwrap();
-        let (device, client) = get_first_device(&lib);
+        let client = get_first_device();
         let derivation_path = DerivationPath::from_str("m/49'/1'/0'/0/0").unwrap();
 
-        device
-            .display_address_with_path(
-                &client,
-                &derivation_path,
-                types::HWIAddressType::Sh_Wit,
-                &lib,
-            )
+        client
+            .display_address_with_path(&derivation_path, types::HWIAddressType::Sh_Wit)
             .unwrap();
     }
 
     #[test]
     #[serial]
     fn test_display_address_with_path_native_segwit() {
-        let lib = HWILib::initialize().unwrap();
-        let (device, client) = get_first_device(&lib);
+        let client = get_first_device();
         let derivation_path = DerivationPath::from_str("m/84'/1'/0'/0/0").unwrap();
 
-        device
-            .display_address_with_path(&client, &derivation_path, types::HWIAddressType::Wit, &lib)
+        client
+            .display_address_with_path(&derivation_path, types::HWIAddressType::Wit)
             .unwrap();
     }
 
@@ -201,8 +153,7 @@ mod tests {
     #[test]
     #[serial]
     fn test_get_keypool() {
-        let lib = HWILib::initialize().unwrap();
-        let (device, client) = get_first_device(&lib);
+        let client = get_first_device();
         let keypool = true;
         let internal = false;
         let address_type = types::HWIAddressType::Legacy;
@@ -210,9 +161,8 @@ mod tests {
         let derivation_path = DerivationPath::from_str("m/44'/1'/0'").unwrap();
         let start = 1;
         let end = 5;
-        device
+        client
             .get_keypool(
-                &client,
                 keypool,
                 internal,
                 address_type,
@@ -221,7 +171,6 @@ mod tests {
                 Some(&derivation_path),
                 start,
                 end,
-                &lib,
             )
             .unwrap();
 
@@ -231,9 +180,8 @@ mod tests {
         let account = None;
         let start = 1;
         let end = 8;
-        device
+        client
             .get_keypool(
-                &client,
                 keypool,
                 internal,
                 address_type,
@@ -242,7 +190,6 @@ mod tests {
                 None,
                 start,
                 end,
-                &lib,
             )
             .unwrap();
 
@@ -252,9 +199,8 @@ mod tests {
         let account = Some(1);
         let start = 0;
         let end = 10;
-        device
+        client
             .get_keypool(
-                &client,
                 keypool,
                 internal,
                 address_type,
@@ -263,7 +209,6 @@ mod tests {
                 Some(&derivation_path),
                 start,
                 end,
-                &lib,
             )
             .unwrap();
     }
