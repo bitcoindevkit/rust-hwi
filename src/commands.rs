@@ -141,7 +141,7 @@ impl HWICommand {
         self
     }
 
-   /// Adds expert flag to a HWICommand
+    /// Adds expert flag to a HWICommand
     /// # Arguments
     /// * `e` - whether to add "--expert" flag or not.
     pub fn add_expert(&mut self, e: bool) -> &mut Self {
