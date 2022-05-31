@@ -1,8 +1,8 @@
-use bitcoin::util::{address::Address, psbt::PartiallySignedTransaction};
 use bitcoin::util::bip32::ExtendedPubKey;
+use bitcoin::util::{address::Address, psbt::PartiallySignedTransaction};
 
-use std::ops::Deref;
 use serde::{Deserialize, Deserializer};
+use std::ops::Deref;
 
 #[derive(Deserialize)]
 pub struct HWIExtendedPubKey {
