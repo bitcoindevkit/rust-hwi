@@ -71,6 +71,7 @@ pip install -r requirements.txt
 | --version | Planned |
 | --stdin | NO |
 | --interactive | Planned |
+| --expert | YES |
 
 ## Tests
 

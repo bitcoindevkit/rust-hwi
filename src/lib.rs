@@ -71,7 +71,21 @@ mod tests {
             ChildNumber::from_normal_idx(0).unwrap(),
         ]);
         device
-            .get_xpub(&derivation_path, types::HWIChain::Test)
+            .get_xpub(&derivation_path, false, types::HWIChain::Test)
+            .unwrap();
+    }
+
+    #[test]
+    #[serial]
+    fn test_get_xpub_with_expert_flag_set() {
+        let device = get_first_device();
+        let derivation_path = DerivationPath::from(vec![
+            ChildNumber::from_hardened_idx(44).unwrap(),
+            ChildNumber::from_normal_idx(0).unwrap(),
+        ]);
+
+        device
+            .get_xpub(&derivation_path, true, types::HWIChain::Test)
             .unwrap();
     }
 
