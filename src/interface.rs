@@ -80,14 +80,17 @@ impl HWIDevice {
     /// # Arguments
     /// * `path` - The derivation path to derive the key.
     /// * `chain` - Specify which chain to use.
+    /// * `expert` - Whether to provide more information or not.
     pub fn get_xpub(
         &self,
         path: &DerivationPath,
+        expert: bool,
         chain: HWIChain,
     ) -> Result<HWIExtendedPubKey, Error> {
         let output = HWICommand::new()
             .add_flag(HWIFlag::Fingerprint(self.fingerprint))
             .add_chain(chain)
+            .add_expert(expert)
             .add_subcommand(HWISubcommand::GetXpub)
             .add_path(path, false, false)
             .execute()?;

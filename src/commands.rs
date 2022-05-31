@@ -141,6 +141,16 @@ impl HWICommand {
         self
     }
 
+   /// Adds expert flag to a HWICommand
+    /// # Arguments
+    /// * `e` - whether to add "--expert" flag or not.
+    pub fn add_expert(&mut self, e: bool) -> &mut Self {
+        if e {
+            self.command.arg("--expert");
+        }
+        self
+    }
+
     /// Adds a message to a HWICommand
     /// # Arguments
     /// * `message` - the message to add. Note that it's escaped, preventing injections.
