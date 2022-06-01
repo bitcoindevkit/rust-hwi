@@ -11,7 +11,7 @@ use serde_json::value::Value;
 use crate::error::Error;
 use crate::types::{
     HWIAddress, HWIAddressType, HWIChain, HWIDescriptor, HWIDevice, HWIExtendedPubKey,
-    HWIKeyPoolElement, HWIPartiallySignedTransaction, HWISignature,
+    HWIKeyPoolElement, HWIPartiallySignedTransaction, HWISignature, HWIStatus,
 };
 
 use pyo3::prelude::*;
@@ -270,6 +270,27 @@ impl HWIClient {
                 .call1(py, func_args)?;
             let output = self.hwilib.json_dumps.call1(py, (output,))?;
             deserialize_obj!(&output.to_string())
+        })
+    }
+
+    /// Install the udev rules to the local machine.
+    /// The rules will be copied from the source to the location.
+    /// The default source location is "./udev"
+    /// The default destination location is "/lib/udev/rules.d"
+    pub fn install_udev_rules(source: Option<&str>, location: Option<&str>) -> Result<(), Error> {
+        Python::with_gil(|py| {
+            let libs = HWILib::initialize()?;
+            let func_args = (
+                source.unwrap_or("./udev"),
+                location.unwrap_or("/lib/udev/rules.d/"),
+            );
+            let output = libs
+                .commands
+                .getattr(py, "install_udev_rules")?
+                .call1(py, func_args)?;
+            let output = libs.json_dumps.call1(py, (output,))?;
+            let status: HWIStatus = deserialize_obj!(&output.to_string())?;
+            status.into()
         })
     }
 }
