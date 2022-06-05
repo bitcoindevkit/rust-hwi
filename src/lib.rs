@@ -227,4 +227,20 @@ mod tests {
         HWIClient::set_log_level(types::LogLevel::DEBUG).unwrap();
         test_enumerate();
     }
+
+    #[test]
+    #[serial]
+    fn test_toggle_passphrase() {
+        let devices = HWIClient::enumerate().unwrap();
+        let unsupported = ["ledger", "bitbox01", "coldcard", "jade"];
+        for device in devices {
+            if unsupported.contains(&device.device_type.as_str()) {
+                // These devices don't support togglepassphrase
+                continue;
+            }
+            let client = HWIClient::get_client(&device, true, types::HWIChain::Test).unwrap();
+            client.toggle_passphrase().unwrap();
+            break;
+        }
+    }
 }
