@@ -11,10 +11,10 @@ use serde_json::value::Value;
 use crate::error::Error;
 use crate::types::{
     HWIAddress, HWIAddressType, HWIChain, HWIDescriptor, HWIDevice, HWIExtendedPubKey,
-    HWIKeyPoolElement, HWIPartiallySignedTransaction, HWISignature, HWIStatus,
+    HWIKeyPoolElement, HWIPartiallySignedTransaction, HWISignature, HWIStatus, LogLevel,
 };
 
-use pyo3::prelude::*;
+use pyo3::{prelude::*, py_run};
 
 macro_rules! deserialize_obj {
     ( $e: expr ) => {{
@@ -291,6 +291,30 @@ impl HWIClient {
             let output = libs.json_dumps.call1(py, (output,))?;
             let status: HWIStatus = deserialize_obj!(&output.to_string())?;
             status.into()
+        })
+    }
+
+    /// Set logging level
+    /// # Arguments
+    /// * `level` - Log level.
+    pub fn set_log_level(level: LogLevel) -> Result<(), Error> {
+        Python::with_gil(|py| {
+            let arg = match level {
+                LogLevel::DEBUG => 10,
+                LogLevel::INFO => 20,
+                LogLevel::WARNING => 30,
+                LogLevel::ERROR => 40,
+                LogLevel::CRITICAL => 50,
+            };
+            py_run!(
+                py,
+                arg,
+                r#"
+                import logging
+                logging.basicConfig(level=arg)            
+                "#
+            );
+            Ok(())
         })
     }
 }

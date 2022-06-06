@@ -148,3 +148,10 @@ impl From<HWIStatus> for Result<(), Error> {
         }
     }
 }
+pub enum LogLevel {
+    DEBUG,
+    INFO,
+    WARNING,
+    ERROR,
+    CRITICAL,
+}
