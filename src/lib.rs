@@ -2,10 +2,10 @@
 //!
 //! # Example
 //! ```
+//! use bitcoin::util::bip32::{ChildNumber, DerivationPath};
+//! use hwi::error::Error;
 //! use hwi::interface::HWIClient;
 //! use hwi::types;
-//! use hwi::error::Error;
-//! use bitcoin::util::bip32::{ChildNumber, DerivationPath};
 //! use std::str::FromStr;
 //!
 //! fn main() -> Result<(), Error> {
@@ -15,11 +15,9 @@
 //!     // Create a client for a device
 //!     let client = HWIClient::get_client(&device, true, types::HWIChain::Test).unwrap();
 //!     let derivation_path = DerivationPath::from_str("m/44'/1'/0'/0/0").unwrap();
-//!     let hwi_address = client.display_address_with_path(
-//!         &derivation_path,
-//!         types::HWIAddressType::Legacy,
-//!     )
-//!     .unwrap();
+//!     let hwi_address = client
+//!         .display_address_with_path(&derivation_path, types::HWIAddressType::Legacy)
+//!         .unwrap();
 //!     println!("{}", hwi_address.address);
 //!     Ok(())
 //! }
