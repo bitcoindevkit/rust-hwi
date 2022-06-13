@@ -210,4 +210,12 @@ mod tests {
             )
             .unwrap();
     }
+    #[test]
+    #[serial]
+    #[ignore]
+    fn test_install_udev_rules() {
+        if cfg!(target_os = "linux") {
+            HWIClient::install_udev_rules(None, None).unwrap()
+        }
+    }
 }

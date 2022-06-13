@@ -7,6 +7,8 @@ use pyo3::types::PyModule;
 use pyo3::{IntoPy, PyObject};
 use serde::{Deserialize, Deserializer};
 
+use crate::error::Error;
+
 #[derive(Deserialize)]
 pub struct HWIExtendedPubKey {
     pub xpub: ExtendedPubKey,
@@ -130,4 +132,19 @@ pub struct HWIDevice {
     pub needs_pin_sent: bool,
     pub needs_passphrase_sent: bool,
     pub fingerprint: Fingerprint,
+}
+
+#[derive(Deserialize)]
+pub struct HWIStatus {
+    pub success: bool,
+}
+
+impl From<HWIStatus> for Result<(), Error> {
+    fn from(s: HWIStatus) -> Self {
+        if s.success {
+            Ok(())
+        } else {
+            Err(Error::HWIError("Request returned with failure".to_string()))
+        }
+    }
 }
