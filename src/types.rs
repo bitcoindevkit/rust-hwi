@@ -1,8 +1,11 @@
-use bitcoin::util::bip32::ExtendedPubKey;
+use std::ops::Deref;
+
+use bitcoin::util::bip32::{ExtendedPubKey, Fingerprint};
 use bitcoin::util::{address::Address, psbt::PartiallySignedTransaction};
 
+use pyo3::types::PyModule;
+use pyo3::{IntoPy, PyObject};
 use serde::{Deserialize, Deserializer};
-use std::ops::Deref;
 
 #[derive(Deserialize)]
 pub struct HWIExtendedPubKey {
@@ -56,7 +59,7 @@ impl Deref for HWIPartiallySignedTransaction {
 }
 
 // TODO: use Descriptors
-#[derive(Deserialize)]
+#[derive(Deserialize, Debug)]
 pub struct HWIDescriptor {
     pub internal: Vec<String>,
     pub receive: Vec<String>,
@@ -81,10 +84,50 @@ pub enum HWIAddressType {
     Tap,
 }
 
-#[derive(Debug)]
+impl IntoPy<PyObject> for HWIAddressType {
+    fn into_py(self, py: pyo3::Python) -> PyObject {
+        let addrtype = PyModule::import(py, "hwilib.common")
+            .unwrap()
+            .getattr("AddressType")
+            .unwrap();
+        match self {
+            HWIAddressType::Legacy => addrtype.get_item("LEGACY").unwrap().into(),
+            HWIAddressType::Sh_Wit => addrtype.get_item("SH_WIT").unwrap().into(),
+            HWIAddressType::Wit => addrtype.get_item("WIT").unwrap().into(),
+            HWIAddressType::Tap => addrtype.get_item("TAP").unwrap().into(),
+        }
+    }
+}
+
+#[derive(Clone, Debug)]
 pub enum HWIChain {
     Main,
     Test,
     Regtest,
     Signet,
+}
+impl IntoPy<PyObject> for HWIChain {
+    fn into_py(self, py: pyo3::Python) -> PyObject {
+        let chain = PyModule::import(py, "hwilib.common")
+            .unwrap()
+            .getattr("Chain")
+            .unwrap();
+        match self {
+            HWIChain::Main => chain.get_item("MAIN").unwrap().into(),
+            HWIChain::Test => chain.get_item("TEST").unwrap().into(),
+            HWIChain::Regtest => chain.get_item("REGTEST").unwrap().into(),
+            HWIChain::Signet => chain.get_item("SIGNET").unwrap().into(),
+        }
+    }
+}
+
+#[derive(Clone, Deserialize)]
+pub struct HWIDevice {
+    #[serde(rename(deserialize = "type"))]
+    pub device_type: String,
+    pub model: String,
+    pub path: String,
+    pub needs_pin_sent: bool,
+    pub needs_passphrase_sent: bool,
+    pub fingerprint: Fingerprint,
 }

@@ -1,0 +1,10 @@
+FROM ghcr.io/ledgerhq/speculos
+
+ADD btc.elf /speculos/btc.elf
+RUN apt-get update
+RUN apt-get install libusb-1.0-0-dev build-essential curl git -y
+RUN curl https://sh.rustup.rs -sSf | bash -s -- -y
+RUN pip install protobuf==3.20.1 hwi
+ADD automation.json /speculos/automation.json
+
+ENTRYPOINT ["python", "./speculos.py", "--automation", "file:automation.json"]
