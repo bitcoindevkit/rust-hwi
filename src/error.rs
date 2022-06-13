@@ -5,7 +5,7 @@ pub enum Error {
     IOError(std::io::Error),
     InvalidOption(String),
     HWIError(String),
-    PyErr(pyo3::prelude::PyErr),
+    PyErr(String),
 }
 
 macro_rules! impl_error {
@@ -21,4 +21,9 @@ macro_rules! impl_error {
 impl_error!(serde_json::Error, JSON);
 impl_error!(std::str::Utf8Error, Utf8);
 impl_error!(std::io::Error, IOError);
-impl_error!(pyo3::prelude::PyErr, PyErr);
+
+impl std::convert::From<pyo3::prelude::PyErr> for Error {
+    fn from(err: pyo3::prelude::PyErr) -> Self {
+        Error::PyErr(err.to_string())
+    }
+}
