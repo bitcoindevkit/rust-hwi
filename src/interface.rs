@@ -21,7 +21,7 @@ macro_rules! deserialize_obj {
         let value: Value = serde_json::from_str($e)?;
         let obj = value.clone();
         serde_json::from_value(value)
-            .map_err(|e| Error::HWIError(format!("Error {:?} while deserializing {:?}", e, obj)))
+            .map_err(|e| Error::HWIError(format!("Error {} while deserializing {}", e, obj)))
     }};
 }
 
