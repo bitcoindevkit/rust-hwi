@@ -1,5 +1,12 @@
 # rust-hwi
-Rust wrapper for [HWI](https://github.com/bitcoin-core/HWI/).
+Rust wrapper for the [Bitcoin Hardware Wallet Interface](https://github.com/bitcoin-core/HWI/) library.
+
+<a href="https://crates.io/crates/hwi"><img alt="Crate Info" src="https://img.shields.io/crates/v/hwi.svg"/></a>
+<a href="https://docs.rs/hwi"><img alt="API Docs" src="https://img.shields.io/badge/docs.rs-hwi-green"/></a>
+<a href="https://blog.rust-lang.org/2020/02/27/Rust-1.41.1.html"><img alt="Rustc Version 1.41+" src="https://img.shields.io/badge/rustc-1.41%2B-lightgrey.svg"/></a>
+<a href="https://discord.gg/d7NkDKm"><img alt="Chat on Discord" src="https://img.shields.io/discord/753336465005608961?logo=discord"></a>
+
+This library internally uses PyO3 to call HWI's functions. It is not a re-implementation of HWI in native Rust.
 
 ## Prerequisites
 
@@ -24,7 +31,7 @@ brew install libusb
 
 - Clone the repo
 ```
-git clone https://github.com/MagicalBitcoin/rust-hwi.git && cd rust-hwi
+git clone https://github.com/bitcoindevkit/rust-hwi.git && cd rust-hwi
 ```
 
 - Create a virtualenv:
@@ -40,58 +47,38 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-## Supported commands
+## Usage
 
-| Command | Supported? |
-|:---:|:---: |
-| enumerate | YES |
-| getmasterxpub | YES |
-| signtx | YES |
-| getxpub | YES |
-| signmessage | YES |
-| getkeypool | YES |
-| getdescriptors | YES |
-| displayaddress | YES | 
-| setup | Planned |
-| wipe | Planned |
-| restore | Planned |
-| backup | Planned |
-| promptpin | Planned |
-| sendpin | Planned |
+```rust
+use bitcoin::util::bip32::DerivationPath;
+use hwi::error::Error;
+use hwi::{interface, types, HWIClient};
+use std::str::FromStr;
 
-| Flag | Supported? |
-|:---:|:---:|
-| --device-path | YES |
-| --device-type | YES |
-| --password | Planned |
-| --stdinpass | NO |
-| --testnet | Planned |
-| --debug | Planned |
-| --fingerprint | YES |
-| --version | Planned |
-| --stdin | NO |
-| --interactive | Planned |
-| --expert | YES |
+fn main() -> Result<(), Error> {
+    let devices = interface::HWIClient::enumerate()?;
+    let device = devices.first().expect("No devices found");
+    let client = HWIClient::get_client(
+        &device,
+        true,
+        types::HWIChain::Test,
+    )?;
+    let derivation_path = DerivationPath::from_str("m/44'/1'/0'/0/0").unwrap();
+    let s = client.sign_message("I love BDK wallet", &derivation_path)?;
+    println!("{:?}", s.signature);
+    Ok(())
+}
+```
 
-## Tests
+## Testing
 
-At the moment you'll need a HW plugged in to be able to run tests.
+To run the tests, you need to have a hardware wallet plugged in. If you don't have a HW for testing, you can try:
+- [Coldcard simulator](https://github.com/Coldcard/firmware)
+- [Trezor simulator](https://docs.trezor.io/trezor-firmware/core/emulator/index.html)
+- [Ledger simulator](https://github.com/LedgerHQ/speculos)
 
-If you don't have a hardware wallet, you can try [coldcard simulator](https://github.com/Coldcard/firmware).
+**Don't use a device with funds for testing!**
 
-To run tests you should:
+Either use a testing device with no funds, or use a simulator.
 
-- Install requirements and activate the virtualenv, as specified before
-- Plug in a HW.
-- `cargo test`
-
-## Devices tested
-| Device | Tested |
-|:---:|:---:|
-| Ledger Nano X | NO
-| Ledger Nano S | YES
-| Trezor One | NO
-| Trezor Model T | YES
-| Digital BitBox | NO
-| KeepKey | NO
-| Coldcard | YES
+You can run the tests with `cargo test`.
