@@ -21,20 +21,35 @@ jobs:
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
         args: --all-features -- -D warnings
-  test_ledger:
+  test_emulators:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+          rust:
+            - version: 1.61.0 # STABLE
+            - version: 1.41.1 # MSRV
+          emulator:
+            - name: trezor
+            - name: ledger
     steps:
-    - uses: actions/checkout@v3
-    - run: wget "https://github.com/LedgerHQ/speculos/blob/master/apps/nanos%23btc%232.1%231c8db8da.elf?raw=true" -O ci/btc.elf
-    - run: docker build -t hwi/ledger_emulator ./ci -f ci/Dockerfile.ledger
-    - run: docker run --rm --name simulator --publish 41000:41000 hwi/ledger_emulator --display headless --vnc-port 41000 btc.elf &
-    - run: docker cp ./ simulator:/rust-hwi/
-    - run: docker exec -w /rust-hwi simulator /root/.cargo/bin/cargo test
-  test_trezor:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v3
-    - run: docker build -t hwi/trezor_emulator ./ci -f ci/Dockerfile.trezor
-    - run: docker run --name simulator hwi/trezor_emulator &
-    - run: docker cp ./ simulator:/rust-hwi/
-    - run: docker exec -w /rust-hwi simulator cargo test
+    - name: Checkout
+      uses: actions/checkout@v3
+    - name: Build simulator image
+      run: docker build -t hwi/${{ matrix.emulator.name }}_emulator ./ci -f ci/Dockerfile.${{ matrix.emulator.name }}
+    - name: Run simulator image
+      run: docker run --name simulator --network=host hwi/${{ matrix.emulator.name }}_emulator &
+    - name: Install Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+        cache: 'pip'
+    - name: Install python dependencies
+      run: pip install -r requirements.txt
+    - name: Set default toolchain
+      run: rustup default ${{ matrix.rust.version }}
+    - name: Set profile
+      run: rustup set profile minimal
+    - name: Update toolchain
+      run: rustup update
+    - name: Test
+      run: cargo test
