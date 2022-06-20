@@ -4,8 +4,8 @@ version = "0.1.3"
 authors = ["Daniela Brozzoni <danielabrozzoni@protonmail.com>"]
 edition = "2018"
 license = "MIT"
-description = "Rust wrapper for Bitcoin Core Hardware Wallet Interface."
-repository = "https://github.com/MagicalBitcoin/rust-hwi"
+description = "Rust wrapper for the Bitcoin Core Hardware Wallet Interface."
+repository = "https://github.com/bitcoindevkit/rust-hwi"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -13,8 +13,6 @@ repository = "https://github.com/MagicalBitcoin/rust-hwi"
 bitcoin = { version = "0.28", features = ["use-serde", "base64"] }
 serde = { version = "^1.0", features = ["derive"] }
 serde_json = { version = "^1.0" }
-strum_macros = "0.24.0"
-base64 = "^0.13.0"
 pyo3 = { version = "0.15.1", features = ["auto-initialize"]}
 
 [dev-dependencies]
