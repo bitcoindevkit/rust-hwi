@@ -9,7 +9,7 @@ use serde::{Deserialize, Deserializer};
 
 use crate::error::Error;
 
-#[derive(Deserialize)]
+#[derive(Clone, Eq, PartialEq, Debug, Deserialize)]
 pub struct HWIExtendedPubKey {
     pub xpub: ExtendedPubKey,
 }
@@ -22,7 +22,7 @@ impl Deref for HWIExtendedPubKey {
     }
 }
 
-#[derive(Deserialize)]
+#[derive(Clone, Eq, PartialEq, Debug, Deserialize)]
 pub struct HWISignature {
     #[serde(deserialize_with = "from_b64")]
     pub signature: Vec<u8>,
@@ -42,12 +42,12 @@ impl Deref for HWISignature {
     }
 }
 
-#[derive(Deserialize)]
+#[derive(Clone, Eq, PartialEq, Debug, Deserialize)]
 pub struct HWIAddress {
     pub address: Address,
 }
 
-#[derive(Deserialize)]
+#[derive(Clone, Eq, PartialEq, Debug, Deserialize)]
 pub struct HWIPartiallySignedTransaction {
     pub psbt: PartiallySignedTransaction,
 }
@@ -61,13 +61,13 @@ impl Deref for HWIPartiallySignedTransaction {
 }
 
 // TODO: use Descriptors
-#[derive(Deserialize, Debug)]
+#[derive(Clone, Eq, PartialEq, Debug, Deserialize)]
 pub struct HWIDescriptor {
     pub internal: Vec<String>,
     pub receive: Vec<String>,
 }
 
-#[derive(Deserialize)]
+#[derive(Clone, Eq, PartialEq, Debug, Deserialize)]
 pub struct HWIKeyPoolElement {
     pub desc: String,
     pub range: Vec<u32>,
@@ -77,7 +77,7 @@ pub struct HWIKeyPoolElement {
     pub watchonly: bool,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Eq, PartialEq, Debug, Deserialize)]
 #[allow(non_camel_case_types)]
 pub enum HWIAddressType {
     Legacy,
@@ -101,7 +101,7 @@ impl IntoPy<PyObject> for HWIAddressType {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Eq, PartialEq, Debug, Deserialize)]
 pub enum HWIChain {
     Main,
     Test,
@@ -123,7 +123,7 @@ impl IntoPy<PyObject> for HWIChain {
     }
 }
 
-#[derive(Clone, Deserialize)]
+#[derive(Clone, Eq, PartialEq, Debug, Deserialize)]
 pub struct HWIDevice {
     #[serde(rename(deserialize = "type"))]
     pub device_type: String,
@@ -134,7 +134,7 @@ pub struct HWIDevice {
     pub fingerprint: Fingerprint,
 }
 
-#[derive(Deserialize)]
+#[derive(Clone, Eq, PartialEq, Debug, Deserialize)]
 pub struct HWIStatus {
     pub success: bool,
 }
