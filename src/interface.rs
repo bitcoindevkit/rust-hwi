@@ -59,6 +59,17 @@ impl Deref for HWIClient {
 
 impl HWIClient {
     /// Lists all HW devices currently connected.
+    /// ```no_run
+    /// # use hwi::HWIClient;
+    /// # use hwi::error::Error;
+    /// # fn main() -> Result<(), Error> {
+    /// let devices = HWIClient::enumerate()?;
+    /// for device in devices {
+    ///     println!("I can see a {} here 😄", device.model);
+    /// }
+    /// # Ok(())
+    /// # }
+    /// ```
     pub fn enumerate() -> Result<Vec<HWIDevice>, Error> {
         let libs = HWILib::initialize()?;
         Python::with_gil(|py| {
@@ -68,11 +79,28 @@ impl HWIClient {
         })
     }
 
-    /// Finds the Python object of the device corresponding to Device
-    /// # Arguements
-    /// * `device` - The device for which the Python object will be passed
-    /// * `expert` - Whether the device should be opened in expert mode (enables additional output for some actions)
-    /// * `chain` - The Chain this client will be using
+    /// Returns the HWIClient for a certain device. You can list all the available devices using
+    /// [`enumerate`](HWIClient::enumerate).
+    ///
+    /// Setting `expert` to `true` will enable additional output for some commands.
+    /// ```
+    /// # use hwi::HWIClient;
+    /// # use hwi::types::*;
+    /// # use hwi::error::Error;
+    /// # fn main() -> Result<(), Error> {
+    /// let devices = HWIClient::enumerate()?;
+    /// for device in devices {
+    ///     let client = HWIClient::get_client(&device, false, HWIChain::Test)?;
+    ///     let xpub = client.get_master_xpub(HWIAddressType::Tap, 0)?;
+    ///     println!(
+    ///         "I can see a {} here, and its xpub is {}",
+    ///         device.model,
+    ///         xpub.to_string()
+    ///     );
+    /// }
+    /// # Ok(())
+    /// # }
+    /// ```
     pub fn get_client(
         device: &HWIDevice,
         expert: bool,
@@ -92,7 +120,7 @@ impl HWIClient {
         })
     }
 
-    /// Returns the master xpub of a device.
+    /// Returns the master xpub of a device, given the address type and the account number.
     pub fn get_master_xpub(
         &self,
         addrtype: HWIAddressType,
@@ -109,9 +137,7 @@ impl HWIClient {
         })
     }
 
-    /// Returns a psbt signed.
-    /// # Arguments
-    /// * `psbt` - The PSBT to be signed.
+    /// Signs a PSBT.
     pub fn sign_tx(
         &self,
         psbt: &PartiallySignedTransaction,
@@ -128,10 +154,7 @@ impl HWIClient {
         })
     }
 
-    /// Returns the xpub of a device.
-    /// # Arguments
-    /// * `path` - The derivation path to derive the key.
-    /// * `expert` - Whether the device should be opened in expert mode (enables additional output for some actions)
+    /// Returns the xpub of a device. If `expert` is set, additional output is returned.
     pub fn get_xpub(
         &self,
         path: &DerivationPath,
@@ -150,9 +173,6 @@ impl HWIClient {
     }
 
     /// Signs a message.
-    /// # Arguments
-    /// * `message` - The message to sign.
-    /// * `path` - The derivation path to derive the key.
     pub fn sign_message(
         &self,
         message: &str,
@@ -171,10 +191,10 @@ impl HWIClient {
     }
 
     /// Returns an array of keys that can be imported in Bitcoin core using importmulti
-    /// # Arguments
+    ///
     /// * `keypool` - `keypool` value in result. Check bitcoin core importmulti documentation for further information
     /// * `internal` - Whether to use internal (change) or external keys
-    /// * `addr_type` - HWIAddressType to use
+    /// * `addr_type` - Address type to use
     /// * `addr_all` - Whether to return a multiple descriptors for every address type
     /// * `account` - Optional BIP43 account to use
     /// * `path` - The derivation path to derive the keys.
@@ -218,9 +238,7 @@ impl HWIClient {
         })
     }
 
-    /// Returns device descriptors
-    /// # Arguments
-    /// * `account` - Optional BIP43 account to use.
+    /// Returns device descriptors. You can optionally specify a BIP43 account to use.
     pub fn get_descriptors(&self, account: Option<u32>) -> Result<HWIDescriptor, Error> {
         Python::with_gil(|py| {
             let func_args = (&self.hw_client, account.unwrap_or(0));
@@ -234,9 +252,7 @@ impl HWIClient {
         })
     }
 
-    /// Returns an address given a descriptor.
-    /// # Arguments
-    /// * `descriptor` - The descriptor to use. HWI doesn't support descriptors checksums.
+    /// Returns an address given a descriptor. Note that HWI doesn't support descriptors checksums.
     pub fn display_address_with_desc(&self, descriptor: &str) -> Result<HWIAddress, Error> {
         Python::with_gil(|py| {
             let path = py.None();
@@ -251,10 +267,7 @@ impl HWIClient {
         })
     }
 
-    /// Returns an address given pat and address type
-    /// # Arguments
-    /// * `path` - The derivation path to use.
-    /// * `address_type` - Address type to use.
+    /// Returns an address given path and address type.
     pub fn display_address_with_path(
         &self,
         path: &DerivationPath,
@@ -274,9 +287,9 @@ impl HWIClient {
     }
 
     /// Install the udev rules to the local machine.
-    /// The rules will be copied from the source to the location.
-    /// The default source location is "./udev"
-    /// The default destination location is "/lib/udev/rules.d"
+    ///
+    /// The rules will be copied from the source to the location; the default source location is
+    /// `./udev`, the default destination location is `/lib/udev/rules.d`
     pub fn install_udev_rules(source: Option<&str>, location: Option<&str>) -> Result<(), Error> {
         Python::with_gil(|py| {
             let libs = HWILib::initialize()?;

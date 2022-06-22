@@ -1,7 +1,7 @@
-//! Rust wrapper for [HWI](https://github.com/bitcoin-core/HWI/).
+//! Rust wrapper for the [Bitcoin Hardware Wallet Interface](https://github.com/bitcoin-core/HWI/).
 //!
-//! # Example
-//! ```
+//! # Example - display address with path
+//! ```no_run
 //! use bitcoin::util::bip32::{ChildNumber, DerivationPath};
 //! use hwi::error::Error;
 //! use hwi::interface::HWIClient;
@@ -13,11 +13,11 @@
 //!     let devices = HWIClient::enumerate()?;
 //!     let device = devices.first().expect("No devices");
 //!     // Create a client for a device
-//!     let client = HWIClient::get_client(&device, true, types::HWIChain::Test).unwrap();
+//!     let client = HWIClient::get_client(&device, true, types::HWIChain::Test)?;
+//!     // Display the address from path
 //!     let derivation_path = DerivationPath::from_str("m/44'/1'/0'/0/0").unwrap();
-//!     let hwi_address = client
-//!         .display_address_with_path(&derivation_path, types::HWIAddressType::Legacy)
-//!         .unwrap();
+//!     let hwi_address =
+//!         client.display_address_with_path(&derivation_path, types::HWIAddressType::Tap)?;
 //!     println!("{}", hwi_address.address);
 //!     Ok(())
 //! }
@@ -50,7 +50,9 @@ mod tests {
 
     fn get_first_device() -> HWIClient {
         HWIClient::get_client(
-            HWIClient::enumerate().unwrap().first().expect("No devices"),
+            HWIClient::enumerate().unwrap().first().expect(
+                "No devices found. Either plug in a hardware wallet, or start a simulator.",
+            ),
             true,
             types::HWIChain::Test,
         )
