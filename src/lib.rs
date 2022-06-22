@@ -218,4 +218,11 @@ mod tests {
             HWIClient::install_udev_rules(None, None).unwrap()
         }
     }
+
+    #[test]
+    #[serial]
+    fn test_set_log_level() {
+        HWIClient::set_log_level(types::LogLevel::DEBUG).unwrap();
+        test_enumerate();
+    }
 }
