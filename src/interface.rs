@@ -4,7 +4,7 @@ use bitcoin::consensus::encode::serialize;
 use bitcoin::util::bip32::DerivationPath;
 use bitcoin::util::psbt::PartiallySignedTransaction;
 
-use base64;
+use bitcoin::base64;
 
 use serde_json::value::Value;
 
