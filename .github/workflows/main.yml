@@ -53,3 +53,5 @@ jobs:
       run: rustup update
     - name: Test
       run: cargo test
+    - name: Wipe
+      run: cargo test test_wipe_device -- --ignored

@@ -212,6 +212,7 @@ mod tests {
             )
             .unwrap();
     }
+
     #[test]
     #[serial]
     #[ignore]
@@ -241,6 +242,22 @@ mod tests {
             let client = HWIClient::get_client(&device, true, types::HWIChain::Test).unwrap();
             client.toggle_passphrase().unwrap();
             break;
+        }
+    }
+
+    #[test]
+    #[serial]
+    #[ignore]
+    fn test_wipe_device() {
+        let devices = HWIClient::enumerate().unwrap();
+        let unsupported = ["ledger", "coldcard", "jade"];
+        for device in devices {
+            if unsupported.contains(&device.device_type.as_str()) {
+                // These devices don't support wipe
+                continue;
+            }
+            let client = HWIClient::get_client(&device, true, types::HWIChain::Test).unwrap();
+            client.wipe_device().unwrap();
         }
     }
 }
