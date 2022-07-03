@@ -2,7 +2,7 @@
     "version": 1,
     "rules": [
         {
-            "regexp": "Address \\(\\d/\\d\\)|Message hash \\(\\d/\\d\\)",
+            "regexp": "Address \\(\\d/\\d\\)|Message hash \\(\\d/\\d\\)|Confirm|Fees|Review|Amount",
             "actions": [
                 [ "button", 2, true ],
                 [ "button", 2, false ]
@@ -20,7 +20,7 @@
             ]
         },
         {
-            "regexp": "Approve|Sign",
+            "regexp": "Approve|Sign|Accept",
             "actions": [
                 [ "button", 3, true ],
                 [ "button", 3, false ]
