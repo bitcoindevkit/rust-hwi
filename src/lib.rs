@@ -37,9 +37,13 @@ pub mod types;
 mod tests {
     use crate::types;
     use crate::HWIClient;
+    use std::collections::BTreeMap;
     use std::str::FromStr;
 
-    use bitcoin::util::bip32::DerivationPath;
+    use bitcoin::psbt::{Input, Output};
+    use bitcoin::util::bip32::{DerivationPath, KeySource};
+    use bitcoin::{secp256k1, Transaction};
+    use bitcoin::{TxIn, TxOut};
 
     #[test]
     #[serial]
@@ -145,10 +149,66 @@ mod tests {
     // #[serial]
     // fn test_display_address_with_path_taproot() {}
 
-    // TODO: Create PSBT with scratch using given Hardware Wallet
-    // #[test]
-    // #[serial]
-    // fn test_sign_tx() {}
+    #[test]
+    #[serial]
+    fn test_sign_tx() {
+        let devices = HWIClient::enumerate().unwrap();
+        let device = devices.first().unwrap();
+        let client = HWIClient::get_client(device, true, types::HWIChain::Test).unwrap();
+        let derivation_path = DerivationPath::from_str("m/44'/1'/0'/0/0").unwrap();
+
+        let address = client
+            .display_address_with_path(&derivation_path, types::HWIAddressType::Legacy)
+            .unwrap();
+
+        let pk = client.get_xpub(&derivation_path, true).unwrap();
+        let mut hd_keypaths: BTreeMap<secp256k1::PublicKey, KeySource> = Default::default();
+        // Here device fingerprint is same as master xpub fingerprint
+        hd_keypaths.insert(pk.public_key, (device.fingerprint, derivation_path));
+
+        let previous_tx = Transaction {
+            version: 1,
+            lock_time: 0,
+            input: vec![TxIn::default()],
+            output: vec![TxOut {
+                value: 100,
+                script_pubkey: address.address.script_pubkey(),
+            }],
+        };
+
+        let previous_txin = TxIn {
+            previous_output: bitcoin::OutPoint {
+                txid: previous_tx.txid(),
+                vout: Default::default(),
+            },
+            ..Default::default()
+        };
+        let psbt = bitcoin::psbt::PartiallySignedTransaction {
+            unsigned_tx: Transaction {
+                version: 1,
+                lock_time: 0,
+                input: vec![previous_txin],
+                output: vec![TxOut {
+                    value: 50,
+                    script_pubkey: address.address.script_pubkey(),
+                }],
+            },
+            xpub: Default::default(),
+            version: Default::default(),
+            proprietary: Default::default(),
+            unknown: Default::default(),
+
+            inputs: vec![Input {
+                non_witness_utxo: Some(previous_tx),
+                witness_utxo: None,
+                bip32_derivation: hd_keypaths,
+                ..Default::default()
+            }],
+            outputs: vec![Output::default()],
+        };
+        let client = get_first_device();
+        client.sign_tx(&psbt).unwrap();
+    }
 
     #[test]
     #[serial]
