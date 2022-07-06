@@ -1,0 +1,17 @@
+FROM python
+
+RUN apt-get update
+RUN apt-get install build-essential git libudev-dev gcc-arm-none-eabi libffi-dev xterm swig libpcsclite-dev libsdl2-dev -y
+RUN git clone --recursive https://github.com/Coldcard/firmware firmware
+WORKDIR /firmware
+RUN git apply unix/linux_addr.patch
+RUN pip install -r requirements.txt
+WORKDIR /firmware/external/micropython/mpy-cross
+RUN make
+WORKDIR /firmware/unix
+RUN pip install -r requirements.txt
+RUN make setup
+RUN make ngu-setup
+RUN make
+
+CMD ["python", "headless.py"]

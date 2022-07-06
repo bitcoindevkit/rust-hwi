@@ -31,13 +31,14 @@ jobs:
           emulator:
             - name: trezor
             - name: ledger
+            - name: coldcard
     steps:
     - name: Checkout
       uses: actions/checkout@v3
     - name: Build simulator image
       run: docker build -t hwi/${{ matrix.emulator.name }}_emulator ./ci -f ci/Dockerfile.${{ matrix.emulator.name }}
     - name: Run simulator image
-      run: docker run --name simulator --network=host hwi/${{ matrix.emulator.name }}_emulator &
+      run: docker run --name simulator --network=host -v /tmp:/tmp --user "$(id -u):$(id -g)" hwi/${{ matrix.emulator.name }}_emulator &
     - name: Install Python
       uses: actions/setup-python@v4
       with:
