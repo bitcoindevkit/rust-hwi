@@ -49,7 +49,17 @@ pub struct HWIAddress {
 
 #[derive(Clone, Eq, PartialEq, Debug, Deserialize)]
 pub struct HWIPartiallySignedTransaction {
+    #[serde(deserialize_with = "deserialize_psbt")]
     pub psbt: PartiallySignedTransaction,
+}
+
+fn deserialize_psbt<'de, D: Deserializer<'de>>(
+    d: D,
+) -> Result<PartiallySignedTransaction, D::Error> {
+    let b64_string = String::deserialize(d)?;
+    let bytes = bitcoin::base64::decode(&b64_string).map_err(serde::de::Error::custom)?;
+    bitcoin::consensus::deserialize::<PartiallySignedTransaction>(&bytes[..])
+        .map_err(serde::de::Error::custom)
 }
 
 impl Deref for HWIPartiallySignedTransaction {
