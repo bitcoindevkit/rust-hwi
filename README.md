@@ -13,37 +13,37 @@ This library internally uses PyO3 to call HWI's functions. It is not a re-implem
 Python 3 is required. The libraries and [udev rules](https://github.com/bitcoin-core/HWI/blob/master/hwilib/udev/README.md) for each device must also be installed. Some libraries will need to be installed
 
 For Ubuntu/Debian:
-```
+```bash
 sudo apt install libusb-1.0-0-dev libudev-dev python3-dev
 ```
 
 For Centos:
-```
+```bash
 sudo yum -y install python3-devel libusbx-devel systemd-devel
 ```
 
 For macOS:
-```
+```bash
 brew install libusb
 ```
 
 ## Install
 
 - Clone the repo
-```
+```bash
 git clone https://github.com/bitcoindevkit/rust-hwi.git && cd rust-hwi
 ```
 
 - Create a virtualenv:
 
-```
+```bash
 virtualenv -p python3 venv
 source venv/bin/activate
 ```
 
 - Install all the dependencies using pip:
 
-```
+```bash
 pip install -r requirements.txt
 ```
 

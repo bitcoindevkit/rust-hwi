@@ -29,6 +29,8 @@ extern crate serial_test;
 
 pub use interface::HWIClient;
 
+#[cfg(feature = "doctest")]
+pub mod doctest;
 pub mod error;
 pub mod interface;
 pub mod types;

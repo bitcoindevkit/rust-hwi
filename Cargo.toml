@@ -17,3 +17,6 @@ pyo3 = { version = "0.15.1", features = ["auto-initialize"]}
 
 [dev-dependencies]
 serial_test = "0.6.0"
+
+[features]
+doctest = []
