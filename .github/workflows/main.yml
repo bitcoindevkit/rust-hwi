@@ -27,7 +27,7 @@ jobs:
       matrix:
           rust:
             - version: 1.61.0 # STABLE
-            - version: 1.41.1 # MSRV
+            - version: 1.56.1 # MSRV
           emulator:
             - name: trezor
             - name: ledger

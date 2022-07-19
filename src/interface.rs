@@ -26,6 +26,7 @@ macro_rules! deserialize_obj {
 }
 
 /// Convenience class containing required Python objects
+#[derive(Debug)]
 struct HWILib {
     commands: Py<PyModule>,
     json_dumps: Py<PyAny>,
@@ -44,6 +45,7 @@ impl HWILib {
     }
 }
 
+#[derive(Debug)]
 pub struct HWIClient {
     hwilib: HWILib,
     hw_client: PyObject,

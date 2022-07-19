@@ -31,17 +31,27 @@ pub use interface::HWIClient;
 
 pub mod error;
 pub mod interface;
+pub mod signer;
 pub mod types;
 
 #[cfg(test)]
 mod tests {
+    use crate::signer::HWISigner;
     use crate::types;
     use crate::HWIClient;
     use std::collections::BTreeMap;
     use std::str::FromStr;
+    use std::sync::Arc;
 
+    use bdk::database::MemoryDatabase;
+    use bdk::signer::SignerOrdering;
+    use bdk::KeychainKind;
+    use bdk::SignOptions;
+    use bdk::Wallet;
     use bitcoin::psbt::{Input, Output};
     use bitcoin::util::bip32::{DerivationPath, KeySource};
+    use bitcoin::Address;
+    use bitcoin::Network;
     use bitcoin::{secp256k1, Transaction};
     use bitcoin::{TxIn, TxOut};
 
@@ -319,5 +329,45 @@ mod tests {
             let client = HWIClient::get_client(&device, true, types::HWIChain::Test).unwrap();
             client.wipe_device().unwrap();
         }
+    }
+    #[test]
+    #[serial]
+    fn test_create_signer() {
+        let descriptors = get_first_device().get_descriptors(None).unwrap();
+        let devices = HWIClient::enumerate().unwrap();
+        let custom_signer =
+            HWISigner::from_device(devices.first().unwrap(), types::HWIChain::Test).unwrap();
+
+        let mut wallet = Wallet::new(
+            &descriptors.internal[0],
+            Some(&descriptors.receive[0]),
+            Network::Testnet,
+            MemoryDatabase::default(),
+        )
+        .unwrap();
+        wallet.add_signer(
+            KeychainKind::External,
+            SignerOrdering(200),
+            Arc::new(custom_signer),
+        );
+
+        let client =
+            bdk::electrum_client::Client::new("ssl://electrum.blockstream.info:60002").unwrap();
+        let blockchain = bdk::blockchain::ElectrumBlockchain::from(client);
+        wallet
+            .sync(&blockchain, bdk::SyncOptions::default())
+            .unwrap();
+
+        let balance = wallet.get_balance().unwrap();
+        let faucet_address = Address::from_str("mv4rnyY3Su5gjcDNzbMLKBQkBicCtHUtFB").unwrap();
+
+        let mut tx_builder = wallet.build_tx();
+        tx_builder
+            .add_recipient(faucet_address.script_pubkey(), balance / 2)
+            .enable_rbf();
+        let (mut psbt, _tx_details) = tx_builder.finish().unwrap();
+        let finalized = wallet.sign(&mut psbt, SignOptions::default()).unwrap();
+
+        assert!(finalized, "Tx has not been finalized");
     }
 }
