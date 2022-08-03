@@ -306,6 +306,11 @@ mod tests {
             break;
         }
     }
+    #[test]
+    #[serial]
+    fn test_get_version() {
+        HWIClient::get_version().unwrap();
+    }
 
     #[test]
     #[serial]
@@ -321,5 +326,11 @@ mod tests {
             let client = HWIClient::get_client(&device, true, types::HWIChain::Test).unwrap();
             client.wipe_device().unwrap();
         }
+    }
+    #[test]
+    #[serial]
+    #[ignore]
+    fn test_install_hwi() {
+        HWIClient::install_hwilib(Some("2.1.1")).unwrap();
     }
 }

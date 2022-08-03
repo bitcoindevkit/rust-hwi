@@ -1,4 +1,5 @@
 use std::ops::Deref;
+use std::process::Command;
 
 use bitcoin::consensus::encode::serialize;
 use bitcoin::util::bip32::DerivationPath;
@@ -361,5 +362,38 @@ impl HWIClient {
             let status: HWIStatus = deserialize_obj!(&output.to_string())?;
             status.into()
         })
+    }
+
+    /// Get the installed version of hwilib. Returns None if hwi is not installed.
+    pub fn get_version() -> Option<String> {
+        Python::with_gil(|py| {
+            Some(
+                PyModule::import(py, "hwilib")
+                    .ok()?
+                    .getattr("__version__")
+                    .expect("Should have a __version__")
+                    .to_string(),
+            )
+        })
+    }
+
+    /// Install hwi for the current user via pip. If no version is specified, the default version from pip will be installed.
+    pub fn install_hwilib(version: Option<&str>) -> Result<(), Error> {
+        let hwi_with_version = match version {
+            Some(ver) => "hwi==".to_owned() + ver,
+            None => "hwi".to_owned(),
+        };
+        let output = Command::new("pip")
+            .args(vec!["install", "--user", hwi_with_version.as_str()])
+            .output()?;
+        if output.status.success() {
+            Ok(())
+        } else {
+            Err(Error::HWIError(
+                std::str::from_utf8(&output.stderr)
+                    .expect("Non UTF-8 error while installing")
+                    .to_string(),
+            ))
+        }
     }
 }
