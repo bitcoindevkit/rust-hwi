@@ -356,7 +356,7 @@ impl HWIClient {
             let output = self
                 .hwilib
                 .commands
-                .getattr(py, "toggle_passphrase")?
+                .getattr(py, "wipe_device")?
                 .call1(py, func_args)?;
             let output = self.hwilib.json_dumps.call1(py, (output,))?;
             let status: HWIStatus = deserialize_obj!(&output.to_string())?;
