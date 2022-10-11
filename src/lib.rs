@@ -170,7 +170,7 @@ mod tests {
 
         let previous_tx = Transaction {
             version: 1,
-            lock_time: bitcoin::PackedLockTime(0),
+            lock_time: 0,
             input: vec![TxIn::default()],
             output: vec![TxOut {
                 value: 100,
@@ -188,7 +188,7 @@ mod tests {
         let psbt = bitcoin::psbt::PartiallySignedTransaction {
             unsigned_tx: Transaction {
                 version: 1,
-                lock_time: bitcoin::PackedLockTime(0),
+                lock_time: 0,
                 input: vec![previous_txin],
                 output: vec![TxOut {
                     value: 50,
