@@ -30,7 +30,7 @@ pub struct HWISignature {
 
 fn from_b64<'de, D: Deserializer<'de>>(d: D) -> Result<Vec<u8>, D::Error> {
     let b64_string = String::deserialize(d)?;
-    base64::decode(&b64_string)
+    bitcoin::base64::decode(&b64_string)
         .map_err(|_| serde::de::Error::custom("Error while Deserializing Signature"))
 }
 
@@ -57,7 +57,7 @@ fn deserialize_psbt<'de, D: Deserializer<'de>>(
     d: D,
 ) -> Result<PartiallySignedTransaction, D::Error> {
     let b64_string = String::deserialize(d)?;
-    let bytes = base64::decode(&b64_string).map_err(serde::de::Error::custom)?;
+    let bytes = bitcoin::base64::decode(&b64_string).map_err(serde::de::Error::custom)?;
     bitcoin::consensus::deserialize::<PartiallySignedTransaction>(&bytes[..])
         .map_err(serde::de::Error::custom)
 }
