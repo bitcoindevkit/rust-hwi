@@ -6,6 +6,7 @@ edition = "2018"
 license = "MIT"
 description = "Rust wrapper for the Bitcoin Core Hardware Wallet Interface."
 repository = "https://github.com/bitcoindevkit/rust-hwi"
+readme = "README.md"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
