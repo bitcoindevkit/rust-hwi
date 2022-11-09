@@ -57,7 +57,7 @@ use std::str::FromStr;
 
 fn main() -> Result<(), Error> {
     let devices = interface::HWIClient::enumerate()?;
-    let device = devices.first().expect("No devices found");
+    let device = devices.first().expect("No devices found").to_owned()?;
     let client = HWIClient::get_client(
         &device,
         true,

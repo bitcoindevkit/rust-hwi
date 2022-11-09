@@ -11,7 +11,7 @@
 //! fn main() -> Result<(), Error> {
 //!     // Find information about devices
 //!     let devices = HWIClient::enumerate()?;
-//!     let device = devices.first().expect("No devices");
+//!     let device = devices.first().expect("No devices").to_owned()?;
 //!     // Create a client for a device
 //!     let client = HWIClient::get_client(&device, true, types::HWIChain::Test)?;
 //!     // Display the address from path
@@ -55,14 +55,13 @@ mod tests {
     }
 
     fn get_first_device() -> HWIClient {
-        HWIClient::get_client(
-            HWIClient::enumerate().unwrap().first().expect(
-                "No devices found. Either plug in a hardware wallet, or start a simulator.",
-            ),
-            true,
-            types::HWIChain::Test,
-        )
-        .unwrap()
+        let devices = HWIClient::enumerate().unwrap();
+        let device = devices
+            .first()
+            .expect("No devices found. Either plug in a hardware wallet, or start a simulator.")
+            .as_ref()
+            .expect("Error when opening the first device");
+        HWIClient::get_client(&device, true, types::HWIChain::Test).unwrap()
     }
 
     #[test]
@@ -155,8 +154,8 @@ mod tests {
     #[serial]
     fn test_sign_tx() {
         let devices = HWIClient::enumerate().unwrap();
-        let device = devices.first().unwrap();
-        let client = HWIClient::get_client(device, true, types::HWIChain::Test).unwrap();
+        let device = devices.first().unwrap().as_ref().unwrap();
+        let client = HWIClient::get_client(&device, true, types::HWIChain::Test).unwrap();
         let derivation_path = DerivationPath::from_str("m/44'/1'/0'/0/0").unwrap();
 
         let address = client
@@ -297,6 +296,7 @@ mod tests {
         let devices = HWIClient::enumerate().unwrap();
         let unsupported = ["ledger", "bitbox01", "coldcard", "jade"];
         for device in devices {
+            let device = device.unwrap();
             if unsupported.contains(&device.device_type.as_str()) {
                 // These devices don't support togglepassphrase
                 continue;
@@ -319,6 +319,7 @@ mod tests {
         let devices = HWIClient::enumerate().unwrap();
         let unsupported = ["ledger", "coldcard", "jade"];
         for device in devices {
+            let device = device.unwrap();
             if unsupported.contains(&device.device_type.as_str()) {
                 // These devices don't support wipe
                 continue;

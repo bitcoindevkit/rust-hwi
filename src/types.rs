@@ -1,3 +1,4 @@
+use std::convert::TryFrom;
 use std::ops::Deref;
 
 use bitcoin::util::bip32::{ExtendedPubKey, Fingerprint};
@@ -134,6 +135,18 @@ impl IntoPy<PyObject> for HWIChain {
 }
 
 #[derive(Clone, Eq, PartialEq, Debug, Deserialize)]
+pub struct HWIDeviceInternal {
+    #[serde(rename(deserialize = "type"))]
+    pub device_type: String,
+    pub model: String,
+    pub path: String,
+    pub needs_pin_sent: bool,
+    pub needs_passphrase_sent: Option<bool>,
+    pub fingerprint: Fingerprint,
+    pub error: Option<String>,
+}
+
+#[derive(Clone, Eq, PartialEq, Debug, Deserialize)]
 pub struct HWIDevice {
     #[serde(rename(deserialize = "type"))]
     pub device_type: String,
@@ -142,6 +155,23 @@ pub struct HWIDevice {
     pub needs_pin_sent: bool,
     pub needs_passphrase_sent: bool,
     pub fingerprint: Fingerprint,
+}
+
+impl TryFrom<HWIDeviceInternal> for HWIDevice {
+    type Error = Error;
+    fn try_from(h: HWIDeviceInternal) -> Result<HWIDevice, Error> {
+        match h.error {
+            Some(e) => Err(Error::HWIError(e)),
+            None => Ok(HWIDevice {
+                device_type: h.device_type,
+                model: h.model,
+                path: h.path,
+                needs_pin_sent: h.needs_pin_sent,
+                needs_passphrase_sent: h.needs_passphrase_sent,
+                fingerprint: h.fingerprint,
+            }),
+        }
+    }
 }
 
 #[derive(Clone, Eq, PartialEq, Debug, Deserialize)]
