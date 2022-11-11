@@ -10,8 +10,11 @@
 //!
 //! fn main() -> Result<(), Error> {
 //!     // Find information about devices
-//!     let devices = HWIClient::enumerate()?;
-//!     let device = devices.first().expect("No devices").to_owned()?;
+//!     let mut devices = HWIClient::enumerate()?;
+//!     if devices.is_empty() {
+//!         panic!("No device found!");
+//!     }
+//!     let device = devices.remove(0)?;
 //!     // Create a client for a device
 //!     let client = HWIClient::get_client(&device, true, types::HWIChain::Test)?;
 //!     // Display the address from path

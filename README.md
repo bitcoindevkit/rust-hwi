@@ -56,10 +56,13 @@ use hwi::{interface, types, HWIClient};
 use std::str::FromStr;
 
 fn main() -> Result<(), Error> {
-    let devices = interface::HWIClient::enumerate()?;
-    let device = devices.first().expect("No devices found").to_owned()?;
+    let mut devices = interface::HWIClient::enumerate()?;
+    if devices.is_empty() {
+        panic!("No devices found!");
+    }
+    let first_device = devices.remove(0)?;
     let client = HWIClient::get_client(
-        &device,
+        &first_device,
         true,
         types::HWIChain::Test,
     )?;
