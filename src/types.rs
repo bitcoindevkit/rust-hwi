@@ -134,15 +134,18 @@ impl IntoPy<PyObject> for HWIChain {
     }
 }
 
+// Used internally to deserialize the result of `hwi enumerate`. This might
+// contain an `error`, when it does, it might not contain all the fields `HWIDevice`
+// is supposed to have - for this reason, they're all Option.
 #[derive(Clone, Eq, PartialEq, Debug, Deserialize)]
-pub struct HWIDeviceInternal {
+pub(crate) struct HWIDeviceInternal {
     #[serde(rename(deserialize = "type"))]
-    pub device_type: String,
-    pub model: String,
-    pub path: String,
-    pub needs_pin_sent: bool,
+    pub device_type: Option<String>,
+    pub model: Option<String>,
+    pub path: Option<String>,
+    pub needs_pin_sent: Option<bool>,
     pub needs_passphrase_sent: Option<bool>,
-    pub fingerprint: Fingerprint,
+    pub fingerprint: Option<Fingerprint>,
     pub error: Option<String>,
 }
 
@@ -162,13 +165,19 @@ impl TryFrom<HWIDeviceInternal> for HWIDevice {
     fn try_from(h: HWIDeviceInternal) -> Result<HWIDevice, Error> {
         match h.error {
             Some(e) => Err(Error::HWIError(e)),
+            // When HWIDeviceInternal contains errors, some fields might be missing
+            // (depending on the error, hwi might not be able to know all of them).
+            // When there's no error though, all the fields must be present, and
+            // for this reason we expect here.
             None => Ok(HWIDevice {
-                device_type: h.device_type,
-                model: h.model,
-                path: h.path,
-                needs_pin_sent: h.needs_pin_sent,
-                needs_passphrase_sent: h.needs_passphrase_sent,
-                fingerprint: h.fingerprint,
+                device_type: h.device_type.expect("Device type should be here"),
+                model: h.model.expect("Model should be here"),
+                path: h.path.expect("Path should be here"),
+                needs_pin_sent: h.needs_pin_sent.expect("needs_pin_sent should be here"),
+                needs_passphrase_sent: h
+                    .needs_passphrase_sent
+                    .expect("needs_passphrase_sent should be here"),
+                fingerprint: h.fingerprint.expect("Fingerprint should be here"),
             }),
         }
     }
