@@ -1,3 +1,4 @@
+use std::convert::TryInto;
 use std::ops::Deref;
 use std::process::Command;
 
@@ -11,8 +12,9 @@ use serde_json::value::Value;
 
 use crate::error::Error;
 use crate::types::{
-    HWIAddress, HWIAddressType, HWIChain, HWIDescriptor, HWIDevice, HWIExtendedPubKey,
-    HWIKeyPoolElement, HWIPartiallySignedTransaction, HWISignature, HWIStatus, LogLevel,
+    HWIAddress, HWIAddressType, HWIChain, HWIDescriptor, HWIDevice, HWIDeviceInternal,
+    HWIExtendedPubKey, HWIKeyPoolElement, HWIPartiallySignedTransaction, HWISignature, HWIStatus,
+    LogLevel,
 };
 
 use pyo3::{prelude::*, py_run};
@@ -68,17 +70,21 @@ impl HWIClient {
     /// # fn main() -> Result<(), Error> {
     /// let devices = HWIClient::enumerate()?;
     /// for device in devices {
-    ///     println!("I can see a {} here 😄", device.model);
+    ///     match device {
+    ///         Ok(d) => println!("I can see a {} here 😄", d.model),
+    ///         Err(e) => println!("Uh oh, something went wrong when opening the device: {}", e),
+    ///     }
     /// }
     /// # Ok(())
     /// # }
     /// ```
-    pub fn enumerate() -> Result<Vec<HWIDevice>, Error> {
+    pub fn enumerate() -> Result<Vec<Result<HWIDevice, Error>>, Error> {
         let libs = HWILib::initialize()?;
         Python::with_gil(|py| {
             let output = libs.commands.getattr(py, "enumerate")?.call0(py)?;
             let output = libs.json_dumps.call1(py, (output,))?;
-            deserialize_obj!(&output.to_string())
+            let devices_internal: Vec<HWIDeviceInternal> = deserialize_obj!(&output.to_string())?;
+            Ok(devices_internal.into_iter().map(|d| d.try_into()).collect())
         })
     }
 
@@ -93,6 +99,7 @@ impl HWIClient {
     /// # fn main() -> Result<(), Error> {
     /// let devices = HWIClient::enumerate()?;
     /// for device in devices {
+    ///     let device = device?;
     ///     let client = HWIClient::get_client(&device, false, HWIChain::Test)?;
     ///     let xpub = client.get_master_xpub(HWIAddressType::Tap, 0)?;
     ///     println!(
