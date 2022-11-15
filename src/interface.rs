@@ -170,6 +170,11 @@ impl HWIClient {
                 .commands
                 .getattr(py, "find_device")?
                 .call1(py, client_args)?;
+
+            if client.is_none(py) {
+                return Err(Error::Utf8("Device not found".to_string()));
+            }
+
             Ok(HWIClient {
                 hwilib: libs,
                 hw_client: client,
