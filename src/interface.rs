@@ -140,13 +140,7 @@ impl HWIClient {
     /// # use hwi::error::Error;
     /// # fn main() -> Result<(), Error> {
     /// let device_type = "trezor";
-    /// let client = HWIClient::find_device(
-    ///     None,
-    ///     Some(device_type),
-    ///     None,
-    ///     true,
-    ///     hwi::types::HWIChain::Test,
-    /// )?;
+    /// let client = HWIClient::find_device(None, Some(device_type), None, false, HWIChain::Test)?;
     /// let xpub = client.get_master_xpub(HWIAddressType::Tap, 0)?;
     /// println!(
     ///     "I can see a {} here, and its xpub is {}",
