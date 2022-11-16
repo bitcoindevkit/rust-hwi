@@ -130,6 +130,58 @@ impl HWIClient {
         })
     }
 
+    /// Returns the HWIClient for a certain `device_type` or `fingerprint`. You can list all the available devices using
+    /// [`enumerate`](HWIClient::enumerate).
+    ///
+    /// Setting `expert` to `true` will enable additional output for some commands.
+    /// ```no_run
+    /// # use hwi::HWIClient;
+    /// # use hwi::types::*;
+    /// # use hwi::error::Error;
+    /// # fn main() -> Result<(), Error> {
+    /// let device_type = "trezor";
+    /// let client = HWIClient::find_device(None, Some(device_type), None, false, HWIChain::Test)?;
+    /// let xpub = client.get_master_xpub(HWIAddressType::Tap, 0)?;
+    /// println!(
+    ///     "I can see a {} here, and its xpub is {}",
+    ///     device_type,
+    ///     xpub.to_string()
+    /// );
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub fn find_device(
+        password: Option<&str>,
+        device_type: Option<&str>,
+        fingerprint: Option<&str>,
+        expert: bool,
+        chain: HWIChain,
+    ) -> Result<HWIClient, Error> {
+        let libs = HWILib::initialize()?;
+        Python::with_gil(|py| {
+            let client_args = (
+                password.unwrap_or(""),
+                device_type.unwrap_or(""),
+                fingerprint.unwrap_or(""),
+                expert,
+                chain,
+            );
+            let client = libs
+                .commands
+                .getattr(py, "find_device")?
+                .call1(py, client_args)?;
+
+            if client.is_none(py) {
+                return Err(Error::HWIError("Device not found".to_string()));
+            }
+
+            Ok(HWIClient {
+                hwilib: libs,
+                hw_client: client,
+            })
+        })
+    }
+
     /// Returns the master xpub of a device, given the address type and the account number.
     pub fn get_master_xpub(
         &self,

@@ -57,6 +57,15 @@ mod tests {
         assert!(devices.len() > 0);
     }
 
+    #[test]
+    #[serial]
+    #[ignore]
+    fn test_find_trezor_device() {
+        let result =
+            HWIClient::find_device(None, Some("trezor"), None, false, types::HWIChain::Test);
+        assert!(result.is_ok())
+    }
+
     fn get_first_device() -> HWIClient {
         let devices = HWIClient::enumerate().unwrap();
         let device = devices
