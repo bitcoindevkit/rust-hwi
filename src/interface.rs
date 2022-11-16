@@ -134,13 +134,19 @@ impl HWIClient {
     /// [`enumerate`](HWIClient::enumerate).
     ///
     /// Setting `expert` to `true` will enable additional output for some commands.
-    /// ```
+    /// ```no_run
     /// # use hwi::HWIClient;
     /// # use hwi::types::*;
     /// # use hwi::error::Error;
     /// # fn main() -> Result<(), Error> {
     /// let device_type = "trezor";
-    /// let client = HWIClient::find_device(None, Some(device_type), None, true, hwi::types::HWIChain::Test)?;
+    /// let client = HWIClient::find_device(
+    ///     None,
+    ///     Some(device_type),
+    ///     None,
+    ///     true,
+    ///     hwi::types::HWIChain::Test,
+    /// )?;
     /// let xpub = client.get_master_xpub(HWIAddressType::Tap, 0)?;
     /// println!(
     ///     "I can see a {} here, and its xpub is {}",
@@ -172,7 +178,7 @@ impl HWIClient {
                 .call1(py, client_args)?;
 
             if client.is_none(py) {
-                return Err(Error::Utf8("Device not found".to_string()));
+                return Err(Error::HWIError("Device not found".to_string()));
             }
 
             Ok(HWIClient {
