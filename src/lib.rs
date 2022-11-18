@@ -318,10 +318,22 @@ mod tests {
             break;
         }
     }
+
     #[test]
     #[serial]
     fn test_get_version() {
         HWIClient::get_version().unwrap();
+    }
+
+    #[test]
+    #[serial]
+    #[ignore]
+    // At the moment (hwi v2.1.1 and trezor-firmware core v2.5.2) work only with physical devices and NOT emulators!
+    fn test_setup_trezor_device() {
+        let client =
+            HWIClient::find_device(None, Some("trezor"), None, false, types::HWIChain::Test)
+                .unwrap();
+        client.setup_device(Some("My Label"), None).unwrap();
     }
 
     #[test]
@@ -340,6 +352,7 @@ mod tests {
             client.wipe_device().unwrap();
         }
     }
+
     #[test]
     #[serial]
     #[ignore]
