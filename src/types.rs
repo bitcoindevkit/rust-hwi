@@ -8,7 +8,7 @@ use pyo3::types::PyModule;
 use pyo3::{IntoPy, PyObject};
 use serde::{Deserialize, Deserializer};
 
-use crate::error::Error;
+use crate::error::{Error, ErrorCode};
 
 #[derive(Clone, Eq, PartialEq, Debug, Deserialize)]
 pub struct HWIExtendedPubKey {
@@ -147,6 +147,7 @@ pub(crate) struct HWIDeviceInternal {
     pub needs_passphrase_sent: Option<bool>,
     pub fingerprint: Option<Fingerprint>,
     pub error: Option<String>,
+    pub code: Option<i8>,
 }
 
 #[derive(Clone, Eq, PartialEq, Debug, Deserialize)]
@@ -164,7 +165,10 @@ impl TryFrom<HWIDeviceInternal> for HWIDevice {
     type Error = Error;
     fn try_from(h: HWIDeviceInternal) -> Result<HWIDevice, Error> {
         match h.error {
-            Some(e) => Err(Error::HWIError(e)),
+            Some(e) => {
+                let code = h.code.and_then(|c| ErrorCode::try_from(c).ok());
+                Err(Error::HWIError(e, code))
+            }
             // When HWIDeviceInternal contains errors, some fields might be missing
             // (depending on the error, hwi might not be able to know all of them).
             // When there's no error though, all the fields must be present, and
@@ -193,7 +197,10 @@ impl From<HWIStatus> for Result<(), Error> {
         if s.success {
             Ok(())
         } else {
-            Err(Error::HWIError("Request returned with failure".to_string()))
+            Err(Error::HWIError(
+                "Request returned with failure".to_string(),
+                None,
+            ))
         }
     }
 }
