@@ -176,7 +176,7 @@ pub(crate) struct HWIDeviceInternal {
 #[derive(Clone, Eq, PartialEq, Debug, Deserialize)]
 pub struct HWIDevice {
     #[serde(rename(deserialize = "type"))]
-    pub device_type: String,
+    pub device_type: HWIDeviceType,
     pub model: String,
     pub path: String,
     pub needs_pin_sent: bool,
@@ -197,7 +197,9 @@ impl TryFrom<HWIDeviceInternal> for HWIDevice {
             // When there's no error though, all the fields must be present, and
             // for this reason we expect here.
             None => Ok(HWIDevice {
-                device_type: h.device_type.expect("Device type should be here"),
+                device_type: HWIDeviceType::from(
+                    h.device_type.expect("Device type should be here"),
+                ),
                 model: h.model.expect("Model should be here"),
                 path: h.path.expect("Path should be here"),
                 needs_pin_sent: h.needs_pin_sent.expect("needs_pin_sent should be here"),
@@ -224,6 +226,51 @@ impl From<HWIStatus> for Result<(), Error> {
                 "Request returned with failure".to_string(),
                 None,
             ))
+        }
+    }
+}
+
+#[derive(Clone, Eq, PartialEq, Debug, Deserialize)]
+pub enum HWIDeviceType {
+    Ledger,
+    Trezor,
+    BitBox01,
+    BitBox02,
+    KeepKey,
+    Coldcard,
+    Jade,
+    Other(String),
+}
+
+impl<T> From<T> for HWIDeviceType
+where
+    T: AsRef<str>,
+{
+    fn from(s: T) -> Self {
+        match s.as_ref() {
+            "ledger" => Self::Ledger,
+            "trezor" => Self::Trezor,
+            "digitalbitbox" => Self::BitBox01,
+            "bitbox02" => Self::BitBox02,
+            "keepkey" => Self::KeepKey,
+            "coldcard" => Self::Coldcard,
+            "jade" => Self::Jade,
+            name => Self::Other(name.to_string()),
+        }
+    }
+}
+
+impl ToString for HWIDeviceType {
+    fn to_string(&self) -> String {
+        match self {
+            Self::Ledger => String::from("ledger"),
+            Self::Trezor => String::from("trezor"),
+            Self::BitBox01 => String::from("digitalbitbox"),
+            Self::BitBox02 => String::from("bitbox02"),
+            Self::KeepKey => String::from("keepkey"),
+            Self::Coldcard => String::from("coldcard"),
+            Self::Jade => String::from("jade"),
+            Self::Other(name) => name.to_string(),
         }
     }
 }

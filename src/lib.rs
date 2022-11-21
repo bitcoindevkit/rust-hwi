@@ -40,7 +40,7 @@ pub mod types;
 
 #[cfg(test)]
 mod tests {
-    use crate::types;
+    use crate::types::{self, HWIDeviceType};
     use crate::HWIClient;
     use std::collections::BTreeMap;
     use std::str::FromStr;
@@ -64,9 +64,14 @@ mod tests {
     #[serial]
     #[ignore]
     fn test_find_trezor_device() {
-        let result =
-            HWIClient::find_device(None, Some("trezor"), None, false, types::HWIChain::Test);
-        assert!(result.is_ok())
+        HWIClient::find_device(
+            None,
+            Some(HWIDeviceType::Trezor),
+            None,
+            false,
+            types::HWIChain::Test,
+        )
+        .unwrap();
     }
 
     fn get_first_device() -> HWIClient {
@@ -331,10 +336,15 @@ mod tests {
     #[serial]
     fn test_toggle_passphrase() {
         let devices = HWIClient::enumerate().unwrap();
-        let unsupported = ["ledger", "bitbox01", "coldcard", "jade"];
+        let unsupported = [
+            HWIDeviceType::Ledger,
+            HWIDeviceType::BitBox01,
+            HWIDeviceType::Coldcard,
+            HWIDeviceType::Jade,
+        ];
         for device in devices {
             let device = device.unwrap();
-            if unsupported.contains(&device.device_type.as_str()) {
+            if unsupported.contains(&device.device_type) {
                 // These devices don't support togglepassphrase
                 continue;
             }
@@ -355,9 +365,14 @@ mod tests {
     #[ignore]
     // At the moment (hwi v2.1.1 and trezor-firmware core v2.5.2) work only with physical devices and NOT emulators!
     fn test_setup_trezor_device() {
-        let client =
-            HWIClient::find_device(None, Some("trezor"), None, false, types::HWIChain::Test)
-                .unwrap();
+        let client = HWIClient::find_device(
+            None,
+            Some(HWIDeviceType::Trezor),
+            None,
+            false,
+            types::HWIChain::Test,
+        )
+        .unwrap();
         client.setup_device(Some("My Label"), None).unwrap();
     }
 
@@ -366,9 +381,14 @@ mod tests {
     #[ignore]
     // At the moment (hwi v2.1.1 and trezor-firmware core v2.5.2) work only with physical devices and NOT emulators!
     fn test_restore_trezor_device() {
-        let client =
-            HWIClient::find_device(None, Some("trezor"), None, false, types::HWIChain::Test)
-                .unwrap();
+        let client = HWIClient::find_device(
+            None,
+            Some(HWIDeviceType::Trezor),
+            None,
+            false,
+            types::HWIChain::Test,
+        )
+        .unwrap();
         client.restore_device(Some("My Label"), None).unwrap();
     }
 
@@ -377,10 +397,14 @@ mod tests {
     #[ignore]
     fn test_wipe_device() {
         let devices = HWIClient::enumerate().unwrap();
-        let unsupported = ["ledger", "coldcard", "jade"];
+        let unsupported = [
+            HWIDeviceType::Ledger,
+            HWIDeviceType::Coldcard,
+            HWIDeviceType::Jade,
+        ];
         for device in devices {
             let device = device.unwrap();
-            if unsupported.contains(&device.device_type.as_str()) {
+            if unsupported.contains(&device.device_type) {
                 // These devices don't support wipe
                 continue;
             }

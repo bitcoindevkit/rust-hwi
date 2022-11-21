@@ -14,8 +14,8 @@ use serde_json::value::Value;
 use crate::error::Error;
 use crate::types::{
     HWIAddress, HWIAddressType, HWIChain, HWIDescriptor, HWIDevice, HWIDeviceInternal,
-    HWIExtendedPubKey, HWIKeyPoolElement, HWIPartiallySignedTransaction, HWISignature, HWIStatus,
-    HWIWordCount, LogLevel, ToDescriptor,
+    HWIDeviceType, HWIExtendedPubKey, HWIKeyPoolElement, HWIPartiallySignedTransaction,
+    HWISignature, HWIStatus, HWIWordCount, LogLevel, ToDescriptor,
 };
 
 use pyo3::{prelude::*, py_run};
@@ -118,7 +118,13 @@ impl HWIClient {
     {
         let libs = HWILib::initialize()?;
         Python::with_gil(|py| {
-            let client_args = (&device.device_type, &device.path, "", expert, chain.into());
+            let client_args = (
+                device.device_type.to_string(),
+                &device.path,
+                "",
+                expert,
+                chain.into(),
+            );
             let client = libs
                 .commands
                 .getattr(py, "get_client")?
@@ -139,20 +145,21 @@ impl HWIClient {
     /// # use hwi::types::*;
     /// # use hwi::error::Error;
     /// # fn main() -> Result<(), Error> {
-    /// let device_type = "trezor";
-    /// let client = HWIClient::find_device(None, Some(device_type), None, false, HWIChain::Test)?;
+    /// let client = HWIClient::find_device(
+    ///     None,
+    ///     Some(HWIDeviceType::Trezor),
+    ///     None,
+    ///     false,
+    ///     HWIChain::Test,
+    /// )?;
     /// let xpub = client.get_master_xpub(HWIAddressType::Tap, 0)?;
-    /// println!(
-    ///     "I can see a {} here, and its xpub is {}",
-    ///     device_type,
-    ///     xpub.to_string()
-    /// );
+    /// println!("Trezor's xpub is {}", xpub.to_string());
     /// # Ok(())
     /// # }
     /// ```
     pub fn find_device<C>(
         password: Option<&str>,
-        device_type: Option<&str>,
+        device_type: Option<HWIDeviceType>,
         fingerprint: Option<&str>,
         expert: bool,
         chain: C,
@@ -164,7 +171,7 @@ impl HWIClient {
         Python::with_gil(|py| {
             let client_args = (
                 password.unwrap_or(""),
-                device_type.unwrap_or(""),
+                device_type.map_or_else(String::new, |d| d.to_string()),
                 fingerprint.unwrap_or(""),
                 expert,
                 chain.into(),
