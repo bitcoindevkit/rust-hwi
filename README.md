@@ -50,22 +50,19 @@ pip install -r requirements.txt
 ## Usage
 
 ```rust
+use bitcoin::Network;
 use bitcoin::util::bip32::DerivationPath;
 use hwi::error::Error;
-use hwi::{interface, types, HWIClient};
+use hwi::HWIClient;
 use std::str::FromStr;
 
 fn main() -> Result<(), Error> {
-    let mut devices = interface::HWIClient::enumerate()?;
+    let mut devices = HWIClient::enumerate()?;
     if devices.is_empty() {
         panic!("No devices found!");
     }
     let first_device = devices.remove(0)?;
-    let client = HWIClient::get_client(
-        &first_device,
-        true,
-        types::HWIChain::Test,
-    )?;
+    let client = HWIClient::get_client(&first_device, true, Network::Testnet)?;
     let derivation_path = DerivationPath::from_str("m/44'/1'/0'/0/0").unwrap();
     let s = client.sign_message("I love BDK wallet", &derivation_path)?;
     println!("{:?}", s.signature);

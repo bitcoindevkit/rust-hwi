@@ -111,14 +111,13 @@ impl HWIClient {
     /// # Ok(())
     /// # }
     /// ```
-    pub fn get_client(
-        device: &HWIDevice,
-        expert: bool,
-        chain: HWIChain,
-    ) -> Result<HWIClient, Error> {
+    pub fn get_client<C>(device: &HWIDevice, expert: bool, chain: C) -> Result<HWIClient, Error>
+    where
+        C: Into<HWIChain>,
+    {
         let libs = HWILib::initialize()?;
         Python::with_gil(|py| {
-            let client_args = (&device.device_type, &device.path, "", expert, chain);
+            let client_args = (&device.device_type, &device.path, "", expert, chain.into());
             let client = libs
                 .commands
                 .getattr(py, "get_client")?
@@ -150,13 +149,16 @@ impl HWIClient {
     /// # Ok(())
     /// # }
     /// ```
-    pub fn find_device(
+    pub fn find_device<C>(
         password: Option<&str>,
         device_type: Option<&str>,
         fingerprint: Option<&str>,
         expert: bool,
-        chain: HWIChain,
-    ) -> Result<HWIClient, Error> {
+        chain: C,
+    ) -> Result<HWIClient, Error>
+    where
+        C: Into<HWIChain>,
+    {
         let libs = HWILib::initialize()?;
         Python::with_gil(|py| {
             let client_args = (
@@ -164,7 +166,7 @@ impl HWIClient {
                 device_type.unwrap_or(""),
                 fingerprint.unwrap_or(""),
                 expert,
-                chain,
+                chain.into(),
             );
             let client = libs
                 .commands
