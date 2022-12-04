@@ -217,10 +217,20 @@ impl From<HWIStatus> for Result<(), Error> {
         }
     }
 }
+
 pub enum LogLevel {
     DEBUG,
     INFO,
     WARNING,
     ERROR,
     CRITICAL,
+}
+
+#[derive(Clone, Eq, PartialEq, Debug, Copy)]
+#[repr(u8)]
+/// The number of words in the recovery phrase
+pub enum HWIWordCount {
+    W12 = 12,
+    W18 = 18,
+    W24 = 24,
 }

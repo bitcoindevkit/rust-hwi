@@ -14,7 +14,7 @@ use crate::error::Error;
 use crate::types::{
     HWIAddress, HWIAddressType, HWIChain, HWIDescriptor, HWIDevice, HWIDeviceInternal,
     HWIExtendedPubKey, HWIKeyPoolElement, HWIPartiallySignedTransaction, HWISignature, HWIStatus,
-    LogLevel,
+    HWIWordCount, LogLevel,
 };
 
 use pyo3::{prelude::*, py_run};
@@ -422,6 +422,26 @@ impl HWIClient {
                 .hwilib
                 .commands
                 .getattr(py, "setup_device")?
+                .call1(py, func_args)?;
+            let output = self.hwilib.json_dumps.call1(py, (output,))?;
+            let status: HWIStatus = deserialize_obj!(&output.to_string())?;
+            status.into()
+        })
+    }
+
+    /// Restore a device
+    pub fn restore_device(
+        &self,
+        label: Option<&str>,
+        word_count: Option<HWIWordCount>,
+    ) -> Result<(), Error> {
+        Python::with_gil(|py| {
+            let word_count: u8 = word_count.map_or_else(|| 24, |w| w as u8);
+            let func_args = (&self.hw_client, label.unwrap_or(""), word_count);
+            let output = self
+                .hwilib
+                .commands
+                .getattr(py, "restore_device")?
                 .call1(py, func_args)?;
             let output = self.hwilib.json_dumps.call1(py, (output,))?;
             let status: HWIStatus = deserialize_obj!(&output.to_string())?;

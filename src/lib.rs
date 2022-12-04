@@ -339,6 +339,17 @@ mod tests {
     #[test]
     #[serial]
     #[ignore]
+    // At the moment (hwi v2.1.1 and trezor-firmware core v2.5.2) work only with physical devices and NOT emulators!
+    fn test_restore_trezor_device() {
+        let client =
+            HWIClient::find_device(None, Some("trezor"), None, false, types::HWIChain::Test)
+                .unwrap();
+        client.restore_device(Some("My Label"), None).unwrap();
+    }
+
+    #[test]
+    #[serial]
+    #[ignore]
     fn test_wipe_device() {
         let devices = HWIClient::enumerate().unwrap();
         let unsupported = ["ledger", "coldcard", "jade"];
