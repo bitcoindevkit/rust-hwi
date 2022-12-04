@@ -3,6 +3,7 @@ use std::ops::Deref;
 
 use bitcoin::util::bip32::{ExtendedPubKey, Fingerprint};
 use bitcoin::util::{address::Address, psbt::PartiallySignedTransaction};
+use bitcoin::Network;
 
 use pyo3::types::PyModule;
 use pyo3::{IntoPy, PyObject};
@@ -119,6 +120,7 @@ pub enum HWIChain {
     Regtest,
     Signet,
 }
+
 impl IntoPy<PyObject> for HWIChain {
     fn into_py(self, py: pyo3::Python) -> PyObject {
         let chain = PyModule::import(py, "hwilib.common")
@@ -130,6 +132,17 @@ impl IntoPy<PyObject> for HWIChain {
             HWIChain::Test => chain.get_item("TEST").unwrap().into(),
             HWIChain::Regtest => chain.get_item("REGTEST").unwrap().into(),
             HWIChain::Signet => chain.get_item("SIGNET").unwrap().into(),
+        }
+    }
+}
+
+impl From<Network> for HWIChain {
+    fn from(network: Network) -> Self {
+        match network {
+            Network::Bitcoin => Self::Main,
+            Network::Testnet => Self::Test,
+            Network::Regtest => Self::Regtest,
+            Network::Signet => Self::Signet,
         }
     }
 }
