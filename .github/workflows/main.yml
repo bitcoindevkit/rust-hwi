@@ -22,7 +22,7 @@ jobs:
         token: ${{ secrets.GITHUB_TOKEN }}
         args: --all-features -- -D warnings
   test_emulators:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     strategy:
       matrix:
           rust:
@@ -57,7 +57,7 @@ jobs:
       run: cargo test test_wipe_device -- --ignored
   test-readme-examples:
     name: Test README.md examples
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - name: checkout
         uses: actions/checkout@v2
