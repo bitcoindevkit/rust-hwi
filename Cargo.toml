@@ -12,9 +12,10 @@ readme = "README.md"
 
 [dependencies]
 bitcoin = { version = "0.29.1", features = ["serde", "base64"] }
+miniscript = { version = "8.0", features = ["serde"], optional = true }
 serde = { version = "^1.0", features = ["derive"] }
 serde_json = { version = "^1.0" }
-pyo3 = { version = "0.15.1", features = ["auto-initialize"]}
+pyo3 = { version = "0.15.1", features = ["auto-initialize"] }
 base64 = "0.13.0"
 once_cell = "=1.14"
 
@@ -23,3 +24,4 @@ serial_test = "0.6.0"
 
 [features]
 doctest = []
+use-miniscript = ["miniscript"]

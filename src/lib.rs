@@ -50,6 +50,9 @@ mod tests {
     use bitcoin::{secp256k1, Transaction};
     use bitcoin::{TxIn, TxOut};
 
+    #[cfg(feature = "use-miniscript")]
+    use miniscript::{Descriptor, DescriptorPublicKey};
+
     #[test]
     #[serial]
     fn test_enumerate() {
@@ -105,24 +108,46 @@ mod tests {
 
     #[test]
     #[serial]
-    fn test_get_descriptors() {
+    fn test_get_string_descriptors() {
         let client = get_first_device();
         let account = Some(10);
-        let descriptor = client.get_descriptors(account).unwrap();
+        let descriptor = client.get_descriptors::<String>(account).unwrap();
         assert!(descriptor.internal.len() > 0);
         assert!(descriptor.receive.len() > 0);
     }
 
     #[test]
     #[serial]
-    fn test_display_address_with_desc() {
+    fn test_display_address_with_string_desc() {
         let client = get_first_device();
-        let descriptor = client.get_descriptors(None).unwrap();
+        let descriptor = client.get_descriptors::<String>(None).unwrap();
         let descriptor = descriptor.receive.first().unwrap();
-        // Seems like hwi doesn't support descriptors checksums
-        let descriptor = &descriptor.split("#").collect::<Vec<_>>()[0].to_string();
-        let descriptor = &descriptor.replace("*", "1"); // e.g. /0/* -> /0/1
-        client.display_address_with_desc(&descriptor).unwrap();
+        client.display_address_with_desc(descriptor).unwrap();
+    }
+
+    #[test]
+    #[serial]
+    #[cfg(feature = "use-miniscript")]
+    fn test_get_miniscript_descriptors() {
+        let client = get_first_device();
+        let account = Some(10);
+        let descriptor = client
+            .get_descriptors::<Descriptor<DescriptorPublicKey>>(account)
+            .unwrap();
+        assert!(descriptor.internal.len() > 0);
+        assert!(descriptor.receive.len() > 0);
+    }
+
+    #[test]
+    #[serial]
+    #[cfg(feature = "use-miniscript")]
+    fn test_display_address_with_miniscript_desc() {
+        let client = get_first_device();
+        let descriptor = client
+            .get_descriptors::<Descriptor<DescriptorPublicKey>>(None)
+            .unwrap();
+        let descriptor = descriptor.receive.first().unwrap();
+        client.display_address_with_desc(descriptor).unwrap();
     }
 
     #[test]

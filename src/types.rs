@@ -9,6 +9,9 @@ use pyo3::types::PyModule;
 use pyo3::{IntoPy, PyObject};
 use serde::{Deserialize, Deserializer};
 
+#[cfg(feature = "use-miniscript")]
+use miniscript::{Descriptor, DescriptorPublicKey};
+
 use crate::error::{Error, ErrorCode};
 
 #[derive(Clone, Eq, PartialEq, Debug, Deserialize)]
@@ -72,11 +75,18 @@ impl Deref for HWIPartiallySignedTransaction {
     }
 }
 
-// TODO: use Descriptors
+pub trait ToDescriptor {}
+impl ToDescriptor for String {}
+#[cfg(feature = "use-miniscript")]
+impl ToDescriptor for Descriptor<DescriptorPublicKey> {}
+
 #[derive(Clone, Eq, PartialEq, Debug, Deserialize)]
-pub struct HWIDescriptor {
-    pub internal: Vec<String>,
-    pub receive: Vec<String>,
+pub struct HWIDescriptor<T>
+where
+    T: ToDescriptor,
+{
+    pub internal: Vec<T>,
+    pub receive: Vec<T>,
 }
 
 #[derive(Clone, Eq, PartialEq, Debug, Deserialize)]

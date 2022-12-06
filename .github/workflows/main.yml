@@ -52,7 +52,7 @@ jobs:
     - name: Update toolchain
       run: rustup update
     - name: Test
-      run: cargo test
+      run: cargo test --features use-miniscript
     - name: Wipe
       run: cargo test test_wipe_device -- --ignored
   test-readme-examples:
