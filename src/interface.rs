@@ -8,13 +8,14 @@ use bitcoin::util::psbt::PartiallySignedTransaction;
 
 use base64;
 
+use serde::de::DeserializeOwned;
 use serde_json::value::Value;
 
 use crate::error::Error;
 use crate::types::{
     HWIAddress, HWIAddressType, HWIChain, HWIDescriptor, HWIDevice, HWIDeviceInternal,
     HWIExtendedPubKey, HWIKeyPoolElement, HWIPartiallySignedTransaction, HWISignature, HWIStatus,
-    HWIWordCount, LogLevel,
+    HWIWordCount, LogLevel, ToDescriptor,
 };
 
 use pyo3::{prelude::*, py_run};
@@ -303,7 +304,10 @@ impl HWIClient {
     }
 
     /// Returns device descriptors. You can optionally specify a BIP43 account to use.
-    pub fn get_descriptors(&self, account: Option<u32>) -> Result<HWIDescriptor, Error> {
+    pub fn get_descriptors<T>(&self, account: Option<u32>) -> Result<HWIDescriptor<T>, Error>
+    where
+        T: ToDescriptor + DeserializeOwned,
+    {
         Python::with_gil(|py| {
             let func_args = (&self.hw_client, account.unwrap_or(0));
             let output = self
@@ -316,10 +320,14 @@ impl HWIClient {
         })
     }
 
-    /// Returns an address given a descriptor. Note that HWI doesn't support descriptors checksums.
-    pub fn display_address_with_desc(&self, descriptor: &str) -> Result<HWIAddress, Error> {
+    /// Returns an address given a descriptor.
+    pub fn display_address_with_desc<T>(&self, descriptor: &T) -> Result<HWIAddress, Error>
+    where
+        T: ToDescriptor + ToString,
+    {
         Python::with_gil(|py| {
             let path = py.None();
+            let descriptor = descriptor.to_string().split('#').collect::<Vec<_>>()[0].to_string();
             let func_args = (&self.hw_client, path, descriptor);
             let output = self
                 .hwilib
