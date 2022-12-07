@@ -11,58 +11,78 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
+  fmt:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - run: cargo fmt --all -- --config format_code_in_doc_comments=true --check
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
-    - run: cargo fmt --all -- --config format_code_in_doc_comments=true --check
-    - run: cargo build
-    - uses: actions-rs/clippy-check@v1
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-        args: --all-features -- -D warnings
-  test_emulators:
+      - uses: actions/checkout@v3
+      - run: cargo build
+      - uses: actions-rs/clippy-check@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          args: --all-features -- -D warnings
+  test-emulators:
     runs-on: ubuntu-20.04
     strategy:
       matrix:
-          rust:
-            - version: 1.61.0 # STABLE
-            - version: 1.41.1 # MSRV
-          emulator:
-            - name: trezor
-            - name: ledger
+        rust:
+          - version: 1.61.0 # STABLE
+          - version: 1.41.1 # MSRV
+        emulator:
+          - name: trezor
+          - name: ledger
     steps:
-    - name: Checkout
-      uses: actions/checkout@v3
-    - name: Build simulator image
-      run: docker build -t hwi/${{ matrix.emulator.name }}_emulator ./ci -f ci/Dockerfile.${{ matrix.emulator.name }}
-    - name: Run simulator image
-      run: docker run --name simulator --network=host hwi/${{ matrix.emulator.name }}_emulator &
-    - name: Install Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.9'
-        cache: 'pip'
-    - name: Install python dependencies
-      run: pip install -r requirements.txt
-    - name: Set default toolchain
-      run: rustup default ${{ matrix.rust.version }}
-    - name: Set profile
-      run: rustup set profile minimal
-    - name: Update toolchain
-      run: rustup update
-    - name: Test
-      run: cargo test --features use-miniscript
-    - name: Wipe
-      run: cargo test test_wipe_device -- --ignored
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-test-emulators-${{ hashFiles('**/Cargo.toml','**/Cargo.lock') }}
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      - name: Build and push
+        uses: docker/build-push-action@v3
+        with:
+          context: ci/
+          file: ci/Dockerfile.${{ matrix.emulator.name }}
+          tags: hwi/${{ matrix.emulator.name }}_emulator:latest
+          load: true
+          cache-from: type=gha
+          cache-to: type=gha
+      - name: Run simulator image
+        run: docker run --name simulator --network=host hwi/${{ matrix.emulator.name }}_emulator &
+      - name: Install Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+          cache: 'pip'
+      - name: Install python dependencies
+        run: pip install -r requirements.txt
+      - name: Set default toolchain
+        run: rustup default ${{ matrix.rust.version }}
+      - name: Set profile
+        run: rustup set profile minimal
+      - name: Update toolchain
+        run: rustup update
+      - name: Test
+        run: cargo test --features use-miniscript
+      - name: Wipe
+        run: cargo test test_wipe_device -- --ignored
   test-readme-examples:
-    name: Test README.md examples
     runs-on: ubuntu-20.04
     steps:
       - name: checkout
         uses: actions/checkout@v2
       - name: cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: |
             ~/.cargo/registry
