@@ -24,3 +24,5 @@ tags
 
 # Virtualenv
 venv/
+
+backup*
