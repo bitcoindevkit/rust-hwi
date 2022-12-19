@@ -40,7 +40,7 @@ pub mod types;
 
 #[cfg(test)]
 mod tests {
-    use crate::types::{self, HWIDeviceType};
+    use crate::types::{self, HWIChain, HWIDeviceType};
     use crate::HWIClient;
     use std::collections::BTreeMap;
     use std::str::FromStr;
@@ -390,6 +390,24 @@ mod tests {
         )
         .unwrap();
         client.restore_device(Some("My Label"), None).unwrap();
+    }
+
+    #[test]
+    #[serial]
+    fn test_backup_device() {
+        let devices = HWIClient::enumerate().unwrap();
+        let supported = [
+            HWIDeviceType::BitBox01,
+            HWIDeviceType::BitBox02,
+            HWIDeviceType::Coldcard,
+        ];
+        for device in devices {
+            let device = device.unwrap();
+            if supported.contains(&device.device_type) {
+                let client = HWIClient::get_client(&device, true, HWIChain::Test).unwrap();
+                client.backup_device(Some("My Label"), None).unwrap();
+            }
+        }
     }
 
     #[test]
