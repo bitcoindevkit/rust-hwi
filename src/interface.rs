@@ -214,7 +214,7 @@ impl HWIClient {
         &self,
         psbt: &PartiallySignedTransaction,
     ) -> Result<HWIPartiallySignedTransaction, Error> {
-        let psbt = base64::encode(&serialize(psbt));
+        let psbt = base64::encode(serialize(psbt));
         Python::with_gil(|py| {
             let output = self
                 .hwilib
