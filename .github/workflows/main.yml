@@ -19,18 +19,28 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - run: cargo build
-      - uses: actions-rs/clippy-check@v1
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Cache
+        uses: actions/cache@v3
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          args: --all-features -- -D warnings
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.toml','**/Cargo.lock') }}
+      - name: Set profile
+        run: rustup set profile minimal && rustup component add clippy
+      - name: Build
+        run: cargo build
+      - name: Clippy
+        run: cargo clippy --all-features -- -D warnings
   test-emulators:
     runs-on: ubuntu-20.04
     strategy:
       matrix:
         rust:
-          - version: 1.61.0 # STABLE
+          - version: 1.66.1 # STABLE
           - version: 1.41.1 # MSRV
         emulator:
           - name: trezor
@@ -38,14 +48,14 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-      - name: cache
+      - name: Cache
         uses: actions/cache@v3
         with:
           path: |
             ~/.cargo/registry
             ~/.cargo/git
             target
-          key: ${{ runner.os }}-cargo-test-emulators-${{ hashFiles('**/Cargo.toml','**/Cargo.lock') }}
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.toml','**/Cargo.lock') }}
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
       - name: Build and push
