@@ -8,6 +8,15 @@ Rust wrapper for the [Bitcoin Hardware Wallet Interface](https://github.com/bitc
 
 This library internally uses PyO3 to call HWI's functions. It is not a re-implementation of HWI in native Rust.
 
+## MSRV
+
+The MSRV for this project is `1.41.1` but to support this version you must enable the `msrv1411` feature:
+```cargo
+    [dependencies]
+    hwi = { path = "../rust-hwi", features = ["msrv1411"] }
+```
+If the `msrv1411` feature is not enabled you must use at least rust version `1.56.0`.
+
 ## Prerequisites
 
 Python 3 is required. The libraries and [udev rules](https://github.com/bitcoin-core/HWI/blob/master/hwilib/udev/README.md) for each device must also be installed. Some libraries will need to be installed
