@@ -3,19 +3,19 @@ Rust wrapper for the [Bitcoin Hardware Wallet Interface](https://github.com/bitc
 
 <a href="https://crates.io/crates/hwi"><img alt="Crate Info" src="https://img.shields.io/crates/v/hwi.svg"/></a>
 <a href="https://docs.rs/hwi"><img alt="API Docs" src="https://img.shields.io/badge/docs.rs-hwi-green"/></a>
-<a href="https://blog.rust-lang.org/2020/02/27/Rust-1.41.1.html"><img alt="Rustc Version 1.41+" src="https://img.shields.io/badge/rustc-1.41%2B-lightgrey.svg"/></a>
+<a href="https://blog.rust-lang.org/2020/02/27/Rust-1.48.html"><img alt="Rustc Version 1.48+" src="https://img.shields.io/badge/rustc-1.48%2B-lightgrey.svg"/></a>
 <a href="https://discord.gg/d7NkDKm"><img alt="Chat on Discord" src="https://img.shields.io/discord/753336465005608961?logo=discord"></a>
 
 This library internally uses PyO3 to call HWI's functions. It is not a re-implementation of HWI in native Rust.
 
 ## MSRV
 
-The MSRV for this project is `1.41.1` but to support this version you must enable the `msrv1411` feature:
+The MSRV for this project is `1.48` but to support this version you must enable the `msrv148` feature:
 ```cargo
     [dependencies]
-    hwi = { path = "../rust-hwi", features = ["msrv1411"] }
+    hwi = { path = "../rust-hwi", features = ["msrv148"] }
 ```
-If the `msrv1411` feature is not enabled you must use at least rust version `1.56.0`.
+If the `msrv148` feature is not enabled you must use at least rust version `1.56.0`.
 
 ## Prerequisites
 

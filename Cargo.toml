@@ -25,4 +25,4 @@ serial_test = "0.6.0"
 [features]
 doctest = []
 use-miniscript = ["miniscript"]
-msrv1411 = ["once_cell"]
+msrv148 = ["once_cell"]

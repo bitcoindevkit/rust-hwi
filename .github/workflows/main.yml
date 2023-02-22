@@ -42,8 +42,8 @@ jobs:
         rust:
           - version: 1.66.1 # STABLE
             features: use-miniscript
-          - version: 1.41.1 # MSRV
-            features: use-miniscript,msrv1411
+          - version: 1.48 # MSRV
+            features: use-miniscript,msrv148
         emulator:
           - name: trezor
           - name: ledger
