@@ -3,6 +3,7 @@ use std::ops::Deref;
 use std::str::FromStr;
 
 use bitcoin::address::{Address, NetworkUnchecked};
+use bitcoin::base64;
 use bitcoin::bip32::{ExtendedPubKey, Fingerprint};
 use bitcoin::psbt::PartiallySignedTransaction;
 use bitcoin::Network;
