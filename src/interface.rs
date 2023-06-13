@@ -2,11 +2,8 @@ use std::convert::TryInto;
 use std::ops::Deref;
 use std::process::Command;
 
-use bitcoin::consensus::encode::serialize;
-use bitcoin::util::bip32::DerivationPath;
-use bitcoin::util::psbt::PartiallySignedTransaction;
-
-use base64;
+use bitcoin::bip32::DerivationPath;
+use bitcoin::psbt::PartiallySignedTransaction;
 
 use serde::de::DeserializeOwned;
 use serde_json::value::Value;
@@ -101,7 +98,7 @@ impl HWIClient {
     /// let devices = HWIClient::enumerate()?;
     /// for device in devices {
     ///     let device = device?;
-    ///     let client = HWIClient::get_client(&device, false, bitcoin::Network::Testnet)?;
+    ///     let client = HWIClient::get_client(&device, false, bitcoin::Network::Testnet.into())?;
     ///     let xpub = client.get_master_xpub(HWIAddressType::Tap, 0)?;
     ///     println!(
     ///         "I can see a {} here, and its xpub is {}",
@@ -112,10 +109,11 @@ impl HWIClient {
     /// # Ok(())
     /// # }
     /// ```
-    pub fn get_client<C>(device: &HWIDevice, expert: bool, chain: C) -> Result<HWIClient, Error>
-    where
-        C: Into<HWIChain>,
-    {
+    pub fn get_client(
+        device: &HWIDevice,
+        expert: bool,
+        chain: HWIChain,
+    ) -> Result<HWIClient, Error> {
         let libs = HWILib::initialize()?;
         Python::with_gil(|py| {
             let client_args = (
@@ -123,7 +121,7 @@ impl HWIClient {
                 &device.path,
                 "",
                 expert,
-                chain.into(),
+                chain,
             );
             let client = libs
                 .commands
@@ -211,13 +209,12 @@ impl HWIClient {
         &self,
         psbt: &PartiallySignedTransaction,
     ) -> Result<HWIPartiallySignedTransaction, Error> {
-        let psbt = base64::encode(serialize(psbt));
         Python::with_gil(|py| {
             let output = self
                 .hwilib
                 .commands
                 .getattr(py, "signtx")?
-                .call1(py, (&self.hw_client, psbt))?;
+                .call1(py, (&self.hw_client, psbt.to_string()))?;
             let output = self.hwilib.json_dumps.call1(py, (output,))?;
             deserialize_obj!(&output.to_string())
         })
