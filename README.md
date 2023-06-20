@@ -10,12 +10,7 @@ This library internally uses PyO3 to call HWI's functions. It is not a re-implem
 
 ## MSRV
 
-The MSRV for this project is `1.41.1` but to support this version you must enable the `msrv1411` feature:
-```cargo
-    [dependencies]
-    hwi = { path = "../rust-hwi", features = ["msrv1411"] }
-```
-If the `msrv1411` feature is not enabled you must use at least rust version `1.56.0`.
+The MSRV for this project is `1.48.0`.
 
 ## Prerequisites
 
