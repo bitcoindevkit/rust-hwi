@@ -25,7 +25,7 @@ macro_rules! deserialize_obj {
         let value: Value = serde_json::from_str($e)?;
         let obj = value.clone();
         serde_json::from_value(value)
-            .map_err(|e| Error::HWIError(format!("Error {} while deserializing {}", e, obj), None))
+            .map_err(|e| Error::HWIError(format!("error {} while deserializing {}", e, obj), None))
     }};
 }
 
@@ -182,7 +182,7 @@ impl HWIClient {
                 .call1(py, client_args)?;
 
             if client.is_none(py) {
-                return Err(Error::HWIError("Device not found".to_string(), None));
+                return Err(Error::HWIError("device not found".to_string(), None));
             }
 
             Ok(HWIClient {

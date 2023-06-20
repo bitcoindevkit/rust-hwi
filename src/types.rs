@@ -36,7 +36,7 @@ pub struct HWISignature {
 fn from_b64<'de, D: Deserializer<'de>>(d: D) -> Result<Vec<u8>, D::Error> {
     let b64_string = String::deserialize(d)?;
     base64::decode(b64_string)
-        .map_err(|_| serde::de::Error::custom("Error while Deserializing Signature"))
+        .map_err(|_| serde::de::Error::custom("error while deserializing signature"))
 }
 
 impl Deref for HWISignature {
@@ -223,7 +223,7 @@ impl From<HWIStatus> for Result<(), Error> {
             Ok(())
         } else {
             Err(Error::HWIError(
-                "Request returned with failure".to_string(),
+                "request returned with failure".to_string(),
                 None,
             ))
         }

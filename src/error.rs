@@ -59,7 +59,7 @@ impl TryFrom<i8> for ErrorCode {
             -16 => NeedToBeRoot,
             -17 => HelpText,
             -18 => DeviceNotInitialized,
-            _ => return Err(Error::HWIError("Invalid error code".to_string(), None)),
+            _ => return Err(Error::HWIError("invalid error code".to_string(), None)),
         };
         Ok(code)
     }
