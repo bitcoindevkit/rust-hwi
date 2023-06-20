@@ -59,7 +59,7 @@ impl TryFrom<i8> for ErrorCode {
             -16 => NeedToBeRoot,
             -17 => HelpText,
             -18 => DeviceNotInitialized,
-            _ => return Err(Error::HWIError("invalid error code".to_string(), None)),
+            _ => return Err(Error::Hwi("invalid error code".to_string(), None)),
         };
         Ok(code)
     }
@@ -73,12 +73,12 @@ impl fmt::Debug for ErrorCode {
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum Error {
-    JSON(String),
+    Json(String),
     Utf8(String),
-    IOError(String),
+    Io(String),
     InvalidOption(String),
-    HWIError(String, Option<ErrorCode>),
-    PyErr(String),
+    Hwi(String, Option<ErrorCode>),
+    Python(String),
 }
 
 macro_rules! impl_error {
@@ -91,10 +91,10 @@ macro_rules! impl_error {
     };
 }
 
-impl_error!(serde_json::Error, JSON);
+impl_error!(serde_json::Error, Json);
 impl_error!(std::str::Utf8Error, Utf8);
-impl_error!(std::io::Error, IOError);
-impl_error!(pyo3::prelude::PyErr, PyErr);
+impl_error!(std::io::Error, Io);
+impl_error!(pyo3::prelude::PyErr, Python);
 
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {

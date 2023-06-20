@@ -190,7 +190,7 @@ impl TryFrom<HWIDeviceInternal> for HWIDevice {
         match h.error {
             Some(e) => {
                 let code = h.code.and_then(|c| ErrorCode::try_from(c).ok());
-                Err(Error::HWIError(e, code))
+                Err(Error::Hwi(e, code))
             }
             // When HWIDeviceInternal contains errors, some fields might be missing
             // (depending on the error, hwi might not be able to know all of them).
@@ -222,7 +222,7 @@ impl From<HWIStatus> for Result<(), Error> {
         if s.success {
             Ok(())
         } else {
-            Err(Error::HWIError(
+            Err(Error::Hwi(
                 "request returned with failure".to_string(),
                 None,
             ))
