@@ -36,28 +36,32 @@ impl ErrorCode {
 
 impl TryFrom<i8> for ErrorCode {
     type Error = Error;
+
     fn try_from(code: i8) -> Result<Self, Error> {
-        match code {
-            -1 => Ok(Self::NoDeviceType),
-            -2 => Ok(Self::MissingArguments),
-            -3 => Ok(Self::DeviceConnError),
-            -4 => Ok(Self::UnknownDeviceType),
-            -5 => Ok(Self::InvalidTx),
-            -6 => Ok(Self::NoPassword),
-            -7 => Ok(Self::BadArgument),
-            -8 => Ok(Self::NotImplemented),
-            -9 => Ok(Self::UnavailableAction),
-            -10 => Ok(Self::DeviceAlreadyInit),
-            -11 => Ok(Self::DeviceAlreadyUnlocked),
-            -12 => Ok(Self::DeviceNotReady),
-            -13 => Ok(Self::UnknownError),
-            -14 => Ok(Self::ActionCanceled),
-            -15 => Ok(Self::DeviceBusy),
-            -16 => Ok(Self::NeedToBeRoot),
-            -17 => Ok(Self::HelpText),
-            -18 => Ok(Self::DeviceNotInitialized),
-            _ => Err(Error::HWIError("Invalid error code".to_string(), None)),
-        }
+        use ErrorCode::*;
+
+        let code = match code {
+            -1 => NoDeviceType,
+            -2 => MissingArguments,
+            -3 => DeviceConnError,
+            -4 => UnknownDeviceType,
+            -5 => InvalidTx,
+            -6 => NoPassword,
+            -7 => BadArgument,
+            -8 => NotImplemented,
+            -9 => UnavailableAction,
+            -10 => DeviceAlreadyInit,
+            -11 => DeviceAlreadyUnlocked,
+            -12 => DeviceNotReady,
+            -13 => UnknownError,
+            -14 => ActionCanceled,
+            -15 => DeviceBusy,
+            -16 => NeedToBeRoot,
+            -17 => HelpText,
+            -18 => DeviceNotInitialized,
+            _ => return Err(Error::HWIError("Invalid error code".to_string(), None)),
+        };
+        Ok(code)
     }
 }
 
