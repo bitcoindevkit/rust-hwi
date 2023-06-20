@@ -124,36 +124,28 @@ impl IntoPy<PyObject> for HWIAddressType {
 }
 
 #[derive(Clone, Eq, PartialEq, Debug, Deserialize)]
-pub enum HWIChain {
-    Main,
-    Test,
-    Regtest,
-    Signet,
-}
+pub struct HWIChain(bitcoin::Network);
 
 impl IntoPy<PyObject> for HWIChain {
     fn into_py(self, py: pyo3::Python) -> PyObject {
+        use bitcoin::Network::*;
+
         let chain = PyModule::import(py, "hwilib.common")
             .unwrap()
             .getattr("Chain")
             .unwrap();
-        match self {
-            HWIChain::Main => chain.get_item("MAIN").unwrap().into(),
-            HWIChain::Test => chain.get_item("TEST").unwrap().into(),
-            HWIChain::Regtest => chain.get_item("REGTEST").unwrap().into(),
-            HWIChain::Signet => chain.get_item("SIGNET").unwrap().into(),
+        match self.0 {
+            Bitcoin => chain.get_item("MAIN").unwrap().into(),
+            Testnet => chain.get_item("TEST").unwrap().into(),
+            Regtest => chain.get_item("REGTEST").unwrap().into(),
+            Signet => chain.get_item("SIGNET").unwrap().into(),
         }
     }
 }
 
 impl From<Network> for HWIChain {
     fn from(network: Network) -> Self {
-        match network {
-            Network::Bitcoin => Self::Main,
-            Network::Testnet => Self::Test,
-            Network::Regtest => Self::Regtest,
-            Network::Signet => Self::Signet,
-        }
+        Self(network)
     }
 }
 

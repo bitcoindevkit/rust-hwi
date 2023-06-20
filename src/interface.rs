@@ -101,7 +101,7 @@ impl HWIClient {
     /// let devices = HWIClient::enumerate()?;
     /// for device in devices {
     ///     let device = device?;
-    ///     let client = HWIClient::get_client(&device, false, HWIChain::Test)?;
+    ///     let client = HWIClient::get_client(&device, false, bitcoin::Network::Testnet)?;
     ///     let xpub = client.get_master_xpub(HWIAddressType::Tap, 0)?;
     ///     println!(
     ///         "I can see a {} here, and its xpub is {}",
@@ -150,23 +150,20 @@ impl HWIClient {
     ///     Some(HWIDeviceType::Trezor),
     ///     None,
     ///     false,
-    ///     HWIChain::Test,
+    ///     bitcoin::Network::Testnet,
     /// )?;
     /// let xpub = client.get_master_xpub(HWIAddressType::Tap, 0)?;
     /// println!("Trezor's xpub is {}", xpub.to_string());
     /// # Ok(())
     /// # }
     /// ```
-    pub fn find_device<C>(
+    pub fn find_device(
         password: Option<&str>,
         device_type: Option<HWIDeviceType>,
         fingerprint: Option<&str>,
         expert: bool,
-        chain: C,
-    ) -> Result<HWIClient, Error>
-    where
-        C: Into<HWIChain>,
-    {
+        chain: bitcoin::Network,
+    ) -> Result<HWIClient, Error> {
         let libs = HWILib::initialize()?;
         Python::with_gil(|py| {
             let client_args = (
@@ -174,7 +171,7 @@ impl HWIClient {
                 device_type.map_or_else(String::new, |d| d.to_string()),
                 fingerprint.unwrap_or(""),
                 expert,
-                chain.into(),
+                HWIChain::from(chain),
             );
             let client = libs
                 .commands

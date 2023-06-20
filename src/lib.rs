@@ -16,7 +16,7 @@
 //!     }
 //!     let device = devices.remove(0)?;
 //!     // Create a client for a device
-//!     let client = HWIClient::get_client(&device, true, types::HWIChain::Test)?;
+//!     let client = HWIClient::get_client(&device, true, bitcoin::Network::Testnet)?;
 //!     // Display the address from path
 //!     let derivation_path = DerivationPath::from_str("m/44'/1'/0'/0/0").unwrap();
 //!     let hwi_address =
@@ -40,7 +40,7 @@ pub mod types;
 
 #[cfg(test)]
 mod tests {
-    use crate::types::{self, HWIChain, HWIDeviceType};
+    use crate::types::{self, HWIDeviceType};
     use crate::HWIClient;
     use std::collections::BTreeMap;
     use std::str::FromStr;
@@ -48,7 +48,7 @@ mod tests {
     use bitcoin::psbt::{Input, Output};
     use bitcoin::util::bip32::{DerivationPath, KeySource};
     use bitcoin::{secp256k1, Transaction};
-    use bitcoin::{TxIn, TxOut};
+    use bitcoin::{Network, TxIn, TxOut};
 
     #[cfg(feature = "use-miniscript")]
     use miniscript::{Descriptor, DescriptorPublicKey};
@@ -69,7 +69,7 @@ mod tests {
             Some(HWIDeviceType::Trezor),
             None,
             false,
-            types::HWIChain::Test,
+            Network::Testnet,
         )
         .unwrap();
     }
@@ -81,7 +81,7 @@ mod tests {
             .expect("No devices found. Either plug in a hardware wallet, or start a simulator.")
             .as_ref()
             .expect("Error when opening the first device");
-        HWIClient::get_client(&device, true, types::HWIChain::Test).unwrap()
+        HWIClient::get_client(&device, true, Network::Testnet).unwrap()
     }
 
     #[test]
@@ -197,7 +197,7 @@ mod tests {
     fn test_sign_tx() {
         let devices = HWIClient::enumerate().unwrap();
         let device = devices.first().unwrap().as_ref().unwrap();
-        let client = HWIClient::get_client(&device, true, types::HWIChain::Test).unwrap();
+        let client = HWIClient::get_client(&device, true, Network::Testnet).unwrap();
         let derivation_path = DerivationPath::from_str("m/44'/1'/0'/0/0").unwrap();
 
         let address = client
@@ -348,7 +348,7 @@ mod tests {
                 // These devices don't support togglepassphrase
                 continue;
             }
-            let client = HWIClient::get_client(&device, true, types::HWIChain::Test).unwrap();
+            let client = HWIClient::get_client(&device, true, Network::Testnet).unwrap();
             client.toggle_passphrase().unwrap();
             break;
         }
@@ -370,7 +370,7 @@ mod tests {
             Some(HWIDeviceType::Trezor),
             None,
             false,
-            types::HWIChain::Test,
+            Network::Testnet,
         )
         .unwrap();
         client.setup_device(Some("My Label"), None).unwrap();
@@ -386,7 +386,7 @@ mod tests {
             Some(HWIDeviceType::Trezor),
             None,
             false,
-            types::HWIChain::Test,
+            Network::Testnet,
         )
         .unwrap();
         client.restore_device(Some("My Label"), None).unwrap();
@@ -404,7 +404,7 @@ mod tests {
         for device in devices {
             let device = device.unwrap();
             if supported.contains(&device.device_type) {
-                let client = HWIClient::get_client(&device, true, HWIChain::Test).unwrap();
+                let client = HWIClient::get_client(&device, true, Network::Testnet).unwrap();
                 client.backup_device(Some("My Label"), None).unwrap();
             }
         }
@@ -426,7 +426,7 @@ mod tests {
                 // These devices don't support wipe
                 continue;
             }
-            let client = HWIClient::get_client(&device, true, types::HWIChain::Test).unwrap();
+            let client = HWIClient::get_client(&device, true, Network::Testnet).unwrap();
             client.wipe_device().unwrap();
         }
     }
