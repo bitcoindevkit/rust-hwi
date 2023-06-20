@@ -1,5 +1,5 @@
 use std::convert::TryFrom;
-use std::fmt;
+use std::{fmt, io, str};
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 #[repr(u8)]
@@ -71,35 +71,63 @@ impl fmt::Debug for ErrorCode {
     }
 }
 
-#[derive(Debug, PartialEq, Eq, Clone)]
+#[derive(Debug)]
 pub enum Error {
-    Json(String),
-    Utf8(String),
-    Io(String),
-    InvalidOption(String),
+    Json(serde_json::Error),
+    Utf8(std::str::Utf8Error),
+    Io(std::io::Error),
     Hwi(String, Option<ErrorCode>),
-    Python(String),
+    Python(pyo3::PyErr),
 }
-
-macro_rules! impl_error {
-    ( $from:ty, $to:ident ) => {
-        impl std::convert::From<$from> for Error {
-            fn from(err: $from) -> Self {
-                Error::$to(err.to_string())
-            }
-        }
-    };
-}
-
-impl_error!(serde_json::Error, Json);
-impl_error!(std::str::Utf8Error, Utf8);
-impl_error!(std::io::Error, Io);
-impl_error!(pyo3::prelude::PyErr, Python);
 
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{:?}", self)
+        use Error::*;
+
+        match *self {
+            Json(_) => f.write_str("serde_json error"),
+            Utf8(_) => f.write_str("utf8 error"),
+            Io(_) => f.write_str("I/O error"),
+            Hwi(ref s, ref code) => write!(f, "HWI error: {}, ({:?})", s, code),
+            Python(_) => f.write_str("python error"),
+        }
     }
 }
 
-impl std::error::Error for Error {}
+impl std::error::Error for Error {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        use self::Error::*;
+
+        match *self {
+            Json(ref e) => Some(e),
+            Utf8(ref e) => Some(e),
+            Io(ref e) => Some(e),
+            Hwi(_, _) => None,
+            Python(ref e) => Some(e),
+        }
+    }
+}
+
+impl From<serde_json::Error> for Error {
+    fn from(e: serde_json::Error) -> Self {
+        Error::Json(e)
+    }
+}
+
+impl From<str::Utf8Error> for Error {
+    fn from(e: str::Utf8Error) -> Self {
+        Error::Utf8(e)
+    }
+}
+
+impl From<io::Error> for Error {
+    fn from(e: io::Error) -> Self {
+        Error::Io(e)
+    }
+}
+
+impl From<pyo3::PyErr> for Error {
+    fn from(e: pyo3::PyErr) -> Self {
+        Error::Python(e)
+    }
+}
