@@ -17,7 +17,6 @@ serde = { version = "^1.0", features = ["derive"] }
 serde_json = { version = "^1.0" }
 pyo3 = { version = "0.15.1", features = ["auto-initialize"] }
 base64 = "0.13.0"
-once_cell = { version = "=1.14", optional = true }
 
 [dev-dependencies]
 serial_test = "0.6.0"
@@ -25,4 +24,3 @@ serial_test = "0.6.0"
 [features]
 doctest = []
 use-miniscript = ["miniscript"]
-msrv1411 = ["once_cell"]
