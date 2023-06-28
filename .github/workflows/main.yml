@@ -41,9 +41,9 @@ jobs:
       matrix:
         rust:
           - version: 1.66.1 # STABLE
-            features: use-miniscript
+            features: miniscript
           - version: 1.48.0 # MSRV
-            features: use-miniscript
+            features: miniscript
         emulator:
           - name: trezor
           - name: ledger
