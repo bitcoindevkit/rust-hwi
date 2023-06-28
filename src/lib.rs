@@ -50,7 +50,7 @@ mod tests {
     use bitcoin::{secp256k1, Transaction};
     use bitcoin::{Network, TxIn, TxOut};
 
-    #[cfg(feature = "use-miniscript")]
+    #[cfg(feature = "miniscript")]
     use miniscript::{Descriptor, DescriptorPublicKey};
 
     #[test]
@@ -132,7 +132,7 @@ mod tests {
 
     #[test]
     #[serial]
-    #[cfg(feature = "use-miniscript")]
+    #[cfg(feature = "miniscript")]
     fn test_get_miniscript_descriptors() {
         let client = get_first_device();
         let account = Some(10);
@@ -145,7 +145,7 @@ mod tests {
 
     #[test]
     #[serial]
-    #[cfg(feature = "use-miniscript")]
+    #[cfg(feature = "miniscript")]
     fn test_display_address_with_miniscript_desc() {
         let client = get_first_device();
         let descriptor = client

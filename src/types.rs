@@ -9,7 +9,7 @@ use pyo3::types::PyModule;
 use pyo3::{IntoPy, PyObject};
 use serde::{Deserialize, Deserializer};
 
-#[cfg(feature = "use-miniscript")]
+#[cfg(feature = "miniscript")]
 use miniscript::{Descriptor, DescriptorPublicKey};
 
 use crate::error::{Error, ErrorCode};
@@ -77,7 +77,7 @@ impl Deref for HWIPartiallySignedTransaction {
 
 pub trait ToDescriptor {}
 impl ToDescriptor for String {}
-#[cfg(feature = "use-miniscript")]
+#[cfg(feature = "miniscript")]
 impl ToDescriptor for Descriptor<DescriptorPublicKey> {}
 
 #[derive(Clone, Eq, PartialEq, Debug, Deserialize)]
