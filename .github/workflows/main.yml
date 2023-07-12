@@ -87,8 +87,10 @@ jobs:
       - if: ${{matrix.rust.version}} = 1.48.0
         name: Pin dependencies that use edition 2021
         # serde 1.0.157 uses syn 2.0 which requires edition 2021.
+        # serde_json depends on 1.0.66
         # once_cell v0.15.0 uses edition 2021.
-        run: cargo update -p serde --precise 1.0.156 && cargo update -p once_cell --precise 1.14.0
+        run: cargo update -p serde_json --precise 1.0.99 && cargo update -p serde --precise 1.0.156  && cargo update -p once_cell --precise 1.14.0
+
       - name: Test
         run: cargo test --features ${{ matrix.rust.features }}
       - name: Wipe
