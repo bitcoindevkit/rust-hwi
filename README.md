@@ -10,7 +10,14 @@ This library internally uses PyO3 to call HWI's functions. It is not a re-implem
 
 ## MSRV
 
-The MSRV for this project is `1.48.0`.
+The MSRV for this project is `1.48.0`. To build with the MSRV you will need to pin some dependencies:
+```bash
+cargo update -p serde_json --precise 1.0.99
+cargo update -p serde --precise 1.0.156
+cargo update -p once_cell --precise 1.14.0
+cargo update -p quote --precise 1.0.30
+cargo update -p proc-macro2 --precise 1.0.65
+```
 
 ## Prerequisites
 
