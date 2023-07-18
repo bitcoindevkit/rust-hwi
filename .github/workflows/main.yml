@@ -89,7 +89,8 @@ jobs:
         # serde 1.0.157 uses syn 2.0 which requires edition 2021.
         # serde_json depends on 1.0.66
         # once_cell v0.15.0 uses edition 2021.
-        run: cargo update -p serde_json --precise 1.0.99 && cargo update -p serde --precise 1.0.156  && cargo update -p once_cell --precise 1.14.0
+        # quote 1.0.31 uses proc-macro2 1.0.66, which requires edition 2021
+        run: cargo update -p serde_json --precise 1.0.99 && cargo update -p serde --precise 1.0.156  && cargo update -p once_cell --precise 1.14.0 && cargo update -p quote --precise 1.0.30 && cargo update -p proc-macro2 --precise 1.0.65
 
       - name: Test
         run: cargo test --features ${{ matrix.rust.features }}
