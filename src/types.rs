@@ -181,33 +181,45 @@ pub struct HWIDevice {
     pub path: String,
     pub needs_pin_sent: bool,
     pub needs_passphrase_sent: bool,
-    pub fingerprint: Fingerprint,
+    pub fingerprint: Option<Fingerprint>,
 }
 
 impl TryFrom<HWIDeviceInternal> for HWIDevice {
     type Error = Error;
     fn try_from(h: HWIDeviceInternal) -> Result<HWIDevice, Error> {
-        match h.error {
+        let needs_pin_sent = h.needs_pin_sent.unwrap_or_default();
+        let result = match h.error {
             Some(e) => {
                 let code = h.code.and_then(|c| ErrorCode::try_from(c).ok());
-                Err(Error::Hwi(e, code))
+                if code == Some(ErrorCode::DeviceNotReady) && needs_pin_sent {
+                    None
+                } else {
+                    Some(Error::Hwi(e, code))
+                }
             }
-            // When HWIDeviceInternal contains errors, some fields might be missing
-            // (depending on the error, hwi might not be able to know all of them).
-            // When there's no error though, all the fields must be present, and
-            // for this reason we expect here.
-            None => Ok(HWIDevice {
-                device_type: HWIDeviceType::from(
-                    h.device_type.expect("Device type should be here"),
-                ),
-                model: h.model.expect("Model should be here"),
-                path: h.path.expect("Path should be here"),
-                needs_pin_sent: h.needs_pin_sent.expect("needs_pin_sent should be here"),
-                needs_passphrase_sent: h
-                    .needs_passphrase_sent
-                    .expect("needs_passphrase_sent should be here"),
-                fingerprint: h.fingerprint.expect("Fingerprint should be here"),
-            }),
+            None => None,
+        };
+        match result {
+            Some(error) => Err(error),
+            None => {
+                let fingerprint = if needs_pin_sent {
+                    None
+                } else {
+                    Some(h.fingerprint.expect("Fingerprint should be here"))
+                };
+                Ok(HWIDevice {
+                    device_type: HWIDeviceType::from(
+                        h.device_type.expect("Device type should be here"),
+                    ),
+                    model: h.model.expect("Model should be here"),
+                    path: h.path.expect("Path should be here"),
+                    needs_pin_sent: h.needs_pin_sent.expect("needs_pin_sent should be here"),
+                    needs_passphrase_sent: h
+                        .needs_passphrase_sent
+                        .expect("needs_passphrase_sent should be here"),
+                    fingerprint,
+                })
+            }
         }
     }
 }

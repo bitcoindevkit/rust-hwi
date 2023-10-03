@@ -397,7 +397,7 @@ impl HWIClient {
                 arg,
                 r#"
                 import logging
-                logging.basicConfig(level=arg)            
+                logging.basicConfig(level=arg)
                 "#
             );
             Ok(())
@@ -528,5 +528,36 @@ impl HWIClient {
                 None,
             ))
         }
+    }
+
+    pub fn prompt_pin(&self) -> Result<(), Error> {
+        Python::with_gil(|py| {
+            let func_args = (&self.hw_client,);
+            let output = self
+                .hwilib
+                .commands
+                .getattr(py, "prompt_pin")?
+                .call1(py, func_args)?;
+            let output = self.hwilib.json_dumps.call1(py, (output,))?;
+            let status: HWIStatus = deserialize_obj!(&output.to_string())?;
+            status.into()
+        })
+    }
+
+    pub fn send_pin(
+        &self,
+        pin: String
+    ) -> Result<(), Error> {
+        Python::with_gil(|py| {
+            let func_args = (&self.hw_client, pin);
+            let output = self
+                .hwilib
+                .commands
+                .getattr(py, "send_pin")?
+                .call1(py, func_args)?;
+            let output = self.hwilib.json_dumps.call1(py, (output,))?;
+            let status: HWIStatus = deserialize_obj!(&output.to_string())?;
+            status.into()
+        })
     }
 }

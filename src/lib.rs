@@ -440,4 +440,56 @@ mod tests {
     fn test_install_hwi() {
         HWIClient::install_hwilib(Some("2.1.1")).unwrap();
     }
+
+    #[test]
+    #[serial]
+    fn test_prompt_pin() {
+        let devices = HWIClient::enumerate().unwrap();
+        let unsupported = [
+            HWIDeviceType::Ledger,
+            HWIDeviceType::Coldcard,
+            HWIDeviceType::Jade,
+            HWIDeviceType::BitBox01,
+            HWIDeviceType::BitBox02,
+        ];
+        for device in devices {
+            let device = device.unwrap();
+            if unsupported.contains(&device.device_type) {
+                // These devices don't support prompt_pin
+                continue;
+            }
+            let client = HWIClient::get_client(&device, true, TESTNET).unwrap();
+            client.prompt_pin().unwrap();
+        }
+    }
+
+    #[test]
+    #[serial]
+    fn test_send_pin() {
+        let devices = HWIClient::enumerate().unwrap();
+        let unsupported = [
+            HWIDeviceType::Ledger,
+            HWIDeviceType::Coldcard,
+            HWIDeviceType::Jade,
+            HWIDeviceType::BitBox01,
+            HWIDeviceType::BitBox02,
+        ];
+        for device in devices {
+            let device = device.unwrap();
+            if unsupported.contains(&device.device_type) {
+                // These devices don't support send_pin
+                continue;
+            }
+            // Set the device to a state where pin can be sent
+            let client = HWIClient::get_client(&device, true, TESTNET).unwrap();
+            client.prompt_pin().unwrap();
+
+            let mut s=String::new();
+            stdin().read_line(&mut s).expect("Please Enter Pin");
+            let device_pin: String = s.split_whitespace().map(str::to_string).collect();
+            let check = client.send_pin(String::from(device_pin)).unwrap();
+
+        }
+    }
+
 }
