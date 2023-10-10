@@ -43,8 +43,8 @@ mod tests {
     use crate::types::{self, HWIDeviceType, TESTNET};
     use crate::HWIClient;
     use std::collections::BTreeMap;
+    use std::io::stdin;
     use std::str::FromStr;
-    use std::io::{stdin,};
 
     use bitcoin::bip32::{DerivationPath, KeySource};
     use bitcoin::locktime::absolute;
@@ -209,7 +209,10 @@ mod tests {
         let pk = client.get_xpub(&derivation_path, true).unwrap();
         let mut hd_keypaths: BTreeMap<secp256k1::PublicKey, KeySource> = Default::default();
         // Here device fingerprint is same as master xpub fingerprint
-        hd_keypaths.insert(pk.public_key, (device.fingerprint.unwrap(), derivation_path));
+        hd_keypaths.insert(
+            pk.public_key,
+            (device.fingerprint.unwrap(), derivation_path),
+        );
 
         let script_pubkey = address.address.assume_checked().script_pubkey();
 
@@ -489,8 +492,6 @@ mod tests {
             stdin().read_line(&mut s).expect("Please Enter Pin");
             let device_pin: String = s.split_whitespace().map(str::to_string).collect();
             client.send_pin(String::from(device_pin)).unwrap();
-
         }
     }
-
 }

@@ -544,7 +544,7 @@ impl HWIClient {
         })
     }
 
-pub fn send_pin(&self, pin: String) -> Result<(), Error> {
+    pub fn send_pin(&self, pin: String) -> Result<(), Error> {
         Python::with_gil(|py| {
             let func_args = (&self.hw_client, pin);
             let output = self
