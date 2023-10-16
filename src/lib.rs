@@ -49,7 +49,7 @@ mod tests {
     use bitcoin::locktime::absolute;
     use bitcoin::psbt::{Input, Output};
     use bitcoin::{secp256k1, Transaction};
-    use bitcoin::{Network, TxIn, TxOut};
+    use bitcoin::{transaction, Amount, Network, TxIn, TxOut};
 
     #[cfg(feature = "miniscript")]
     use miniscript::{Descriptor, DescriptorPublicKey};
@@ -213,11 +213,11 @@ mod tests {
         let script_pubkey = address.address.assume_checked().script_pubkey();
 
         let previous_tx = Transaction {
-            version: 1,
+            version: transaction::Version::ONE,
             lock_time: absolute::LockTime::from_consensus(0),
             input: vec![TxIn::default()],
             output: vec![TxOut {
-                value: 100,
+                value: Amount::from_sat(100),
                 script_pubkey: script_pubkey.clone(),
             }],
         };
@@ -229,13 +229,13 @@ mod tests {
             },
             ..Default::default()
         };
-        let psbt = bitcoin::psbt::PartiallySignedTransaction {
+        let psbt = bitcoin::Psbt {
             unsigned_tx: Transaction {
-                version: 1,
+                version: transaction::Version::ONE,
                 lock_time: absolute::LockTime::from_consensus(0),
                 input: vec![previous_txin],
                 output: vec![TxOut {
-                    value: 50,
+                    value: Amount::from_sat(50),
                     script_pubkey: script_pubkey,
                 }],
             },
