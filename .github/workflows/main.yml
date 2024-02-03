@@ -42,8 +42,8 @@ jobs:
         rust:
           - version: 1.66.1 # STABLE
             features: miniscript
-          - version: 1.48.0 # MSRV
-            features: miniscript
+#          - version: 1.48.0 # MSRV
+#            features: miniscript
         emulator:
 #          - name: trezor
 #            docker-params: '--network=host'

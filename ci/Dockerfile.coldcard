@@ -1,19 +1,16 @@
-FROM python:3-slim
+# Ubuntu 23.04 uses gcc-12 by default
+# In coldcard, micropython does not build with gcc-13
+FROM ubuntu:23.04
 
 # Install required packages
-RUN apt-get update
-RUN apt-get install -y build-essential git python3 python3-pip libudev-dev gcc-arm-none-eabi libffi-dev swig libpcsclite-dev python-is-python3 autoconf libtool python3-venv pkg-config
-RUN apt-get clean
+RUN apt-get update && apt-get install -y build-essential git python3 python3-pip libudev-dev gcc-arm-none-eabi libffi-dev swig libpcsclite-dev python-is-python3 autoconf libtool python3-venv pkg-config && apt-get clean
 
 # Prepare source code
 RUN git clone --depth 1 --recursive -b 2024-01-18T1507-v6.2.2X https://github.com/Coldcard/firmware.git
 WORKDIR /firmware/external/libngu/libs/bech32
 RUN git apply ../../bech32.patch
 WORKDIR /firmware
-RUN git apply unix/linux_addr.patch
-RUN rm -rf .git
-RUN sed -i "/git/d" unix/Makefile
-RUN sed -i "/git/d" external/libngu/Makefile
+RUN git apply unix/linux_addr.patch && rm -rf .git && sed -i "/git/d" unix/Makefile && sed -i "/git/d" external/libngu/Makefile
 
 # Prepare virtual env
 ENV VIRTUAL_ENV=/opt/venv
@@ -21,16 +18,13 @@ RUN python3 -m venv $VIRTUAL_ENV
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 # Install dependencies
-RUN pip install -U pip setuptools
-RUN pip install -r requirements.txt
+RUN pip install -U pip setuptools && pip install -r requirements.txt
 
 # Build the Coldcard simulator
 WORKDIR /firmware/external/micropython/mpy-cross/
 RUN make
 WORKDIR /firmware/unix
-RUN make setup
-RUN make ngu-setup
-RUN make
+RUN make setup && make ngu-setup && make
 
 # Run simulator
 ## for running on developers' machines
