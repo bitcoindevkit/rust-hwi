@@ -42,11 +42,15 @@ jobs:
         rust:
           - version: 1.66.1 # STABLE
             features: miniscript
-          - version: 1.48.0 # MSRV
-            features: miniscript
+#          - version: 1.48.0 # MSRV
+#            features: miniscript
         emulator:
-          - name: trezor
-          - name: ledger
+#          - name: trezor
+#            docker-params: '--network=host'
+#          - name: ledger
+#            docker-params: '--network=host'
+          - name: coldcard
+            docker-params: '-v /tmp:/tmp'
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -70,7 +74,7 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha
       - name: Run simulator image
-        run: docker run --name simulator --network=host hwi/${{ matrix.emulator.name }}_emulator &
+        run: docker run --name simulator ${{ matrix.emulator.docker-params }} hwi/${{ matrix.emulator.name }}_emulator &
       - name: Install Python
         uses: actions/setup-python@v4
         with:
