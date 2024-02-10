@@ -3,10 +3,9 @@ use std::ops::Deref;
 use std::str::FromStr;
 
 use bitcoin::address::{Address, NetworkUnchecked};
-use bitcoin::base64;
-use bitcoin::bip32::{ExtendedPubKey, Fingerprint};
-use bitcoin::psbt::PartiallySignedTransaction;
+use bitcoin::bip32::{Fingerprint, Xpub};
 use bitcoin::Network;
+use bitcoin::Psbt;
 
 use pyo3::types::PyModule;
 use pyo3::{IntoPy, PyObject};
@@ -19,11 +18,11 @@ use crate::error::{Error, ErrorCode};
 
 #[derive(Clone, Eq, PartialEq, Debug, Deserialize)]
 pub struct HWIExtendedPubKey {
-    pub xpub: ExtendedPubKey,
+    pub xpub: Xpub,
 }
 
 impl Deref for HWIExtendedPubKey {
-    type Target = ExtendedPubKey;
+    type Target = Xpub;
 
     fn deref(&self) -> &Self::Target {
         &self.xpub
@@ -37,8 +36,11 @@ pub struct HWISignature {
 }
 
 fn from_b64<'de, D: Deserializer<'de>>(d: D) -> Result<Vec<u8>, D::Error> {
+    use bitcoin::base64::{engine::general_purpose, Engine as _};
+
     let b64_string = String::deserialize(d)?;
-    base64::decode(b64_string)
+    general_purpose::STANDARD
+        .decode(b64_string)
         .map_err(|_| serde::de::Error::custom("error while deserializing signature"))
 }
 
@@ -58,18 +60,16 @@ pub struct HWIAddress {
 #[derive(Clone, Eq, PartialEq, Debug, Deserialize)]
 pub struct HWIPartiallySignedTransaction {
     #[serde(deserialize_with = "deserialize_psbt")]
-    pub psbt: PartiallySignedTransaction,
+    pub psbt: Psbt,
 }
 
-fn deserialize_psbt<'de, D: Deserializer<'de>>(
-    d: D,
-) -> Result<PartiallySignedTransaction, D::Error> {
+fn deserialize_psbt<'de, D: Deserializer<'de>>(d: D) -> Result<Psbt, D::Error> {
     let s = String::deserialize(d)?;
-    PartiallySignedTransaction::from_str(&s).map_err(serde::de::Error::custom)
+    Psbt::from_str(&s).map_err(serde::de::Error::custom)
 }
 
 impl Deref for HWIPartiallySignedTransaction {
-    type Target = PartiallySignedTransaction;
+    type Target = Psbt;
 
     fn deref(&self) -> &Self::Target {
         &self.psbt

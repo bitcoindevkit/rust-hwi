@@ -3,7 +3,7 @@ use std::ops::Deref;
 use std::process::Command;
 
 use bitcoin::bip32::DerivationPath;
-use bitcoin::psbt::PartiallySignedTransaction;
+use bitcoin::Psbt;
 
 use serde::de::DeserializeOwned;
 use serde_json::value::Value;
@@ -205,10 +205,7 @@ impl HWIClient {
     }
 
     /// Signs a PSBT.
-    pub fn sign_tx(
-        &self,
-        psbt: &PartiallySignedTransaction,
-    ) -> Result<HWIPartiallySignedTransaction, Error> {
+    pub fn sign_tx(&self, psbt: &Psbt) -> Result<HWIPartiallySignedTransaction, Error> {
         Python::with_gil(|py| {
             let output = self
                 .hwilib
