@@ -3,21 +3,14 @@ Rust wrapper for the [Bitcoin Hardware Wallet Interface](https://github.com/bitc
 
 <a href="https://crates.io/crates/hwi"><img alt="Crate Info" src="https://img.shields.io/crates/v/hwi.svg"/></a>
 <a href="https://docs.rs/hwi"><img alt="API Docs" src="https://img.shields.io/badge/docs.rs-hwi-green"/></a>
-<a href="https://blog.rust-lang.org/2020/02/27/Rust-1.41.1.html"><img alt="Rustc Version 1.41+" src="https://img.shields.io/badge/rustc-1.41%2B-lightgrey.svg"/></a>
+<a href="https://blog.rust-lang.org/2022/08/11/Rust-1.63.0.html"><img alt="Rustc Version 1.63+" src="https://img.shields.io/badge/rustc-1.63%2B-lightgrey.svg"/></a>
 <a href="https://discord.gg/d7NkDKm"><img alt="Chat on Discord" src="https://img.shields.io/discord/753336465005608961?logo=discord"></a>
 
 This library internally uses PyO3 to call HWI's functions. It is not a re-implementation of HWI in native Rust.
 
 ## MSRV
 
-The MSRV for this project is `1.48.0`. To build with the MSRV you will need to pin some dependencies:
-```bash
-cargo update -p serde_json --precise 1.0.99
-cargo update -p serde --precise 1.0.156
-cargo update -p once_cell --precise 1.14.0
-cargo update -p quote --precise 1.0.30
-cargo update -p proc-macro2 --precise 1.0.65
-```
+The MSRV for this project is `1.63.0`.
 
 ## Prerequisites
 
