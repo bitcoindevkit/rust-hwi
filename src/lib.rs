@@ -225,7 +225,7 @@ mod tests {
 
         let previous_txin = TxIn {
             previous_output: bitcoin::OutPoint {
-                txid: previous_tx.txid(),
+                txid: previous_tx.compute_txid(),
                 vout: Default::default(),
             },
             ..Default::default()
