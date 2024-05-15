@@ -260,17 +260,17 @@ where
     }
 }
 
-impl ToString for HWIDeviceType {
-    fn to_string(&self) -> String {
+impl std::fmt::Display for HWIDeviceType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::Ledger => String::from("ledger"),
-            Self::Trezor => String::from("trezor"),
-            Self::BitBox01 => String::from("digitalbitbox"),
-            Self::BitBox02 => String::from("bitbox02"),
-            Self::KeepKey => String::from("keepkey"),
-            Self::Coldcard => String::from("coldcard"),
-            Self::Jade => String::from("jade"),
-            Self::Other(name) => name.to_string(),
+            Self::Ledger => write!(f, "ledger"),
+            Self::Trezor => write!(f, "trezor"),
+            Self::BitBox01 => write!(f, "digitalbitbox"),
+            Self::BitBox02 => write!(f, "bitbox02"),
+            Self::KeepKey => write!(f, "keepkey"),
+            Self::Coldcard => write!(f, "coldcard"),
+            Self::Jade => write!(f, "jade"),
+            Self::Other(name) => write!(f, "{}", name),
         }
     }
 }

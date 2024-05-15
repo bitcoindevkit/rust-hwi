@@ -58,7 +58,7 @@ mod tests {
     #[serial]
     fn test_enumerate() {
         let devices = HWIClient::enumerate().unwrap();
-        assert!(devices.len() > 0);
+        assert!(!devices.is_empty());
     }
 
     #[test]
@@ -82,7 +82,7 @@ mod tests {
             .expect("No devices found. Either plug in a hardware wallet, or start a simulator.")
             .as_ref()
             .expect("Error when opening the first device");
-        HWIClient::get_client(&device, true, TESTNET).unwrap()
+        HWIClient::get_client(device, true, TESTNET).unwrap()
     }
 
     #[test]
@@ -118,8 +118,8 @@ mod tests {
         let client = get_first_device();
         let account = Some(10);
         let descriptor = client.get_descriptors::<String>(account).unwrap();
-        assert!(descriptor.internal.len() > 0);
-        assert!(descriptor.receive.len() > 0);
+        assert!(!descriptor.internal.is_empty());
+        assert!(!descriptor.receive.is_empty());
     }
 
     #[test]
@@ -140,8 +140,8 @@ mod tests {
         let descriptor = client
             .get_descriptors::<Descriptor<DescriptorPublicKey>>(account)
             .unwrap();
-        assert!(descriptor.internal.len() > 0);
-        assert!(descriptor.receive.len() > 0);
+        assert!(!descriptor.internal.is_empty());
+        assert!(!descriptor.receive.is_empty());
     }
 
     #[test]
@@ -198,7 +198,7 @@ mod tests {
     fn test_sign_tx() {
         let devices = HWIClient::enumerate().unwrap();
         let device = devices.first().unwrap().as_ref().unwrap();
-        let client = HWIClient::get_client(&device, true, TESTNET).unwrap();
+        let client = HWIClient::get_client(device, true, TESTNET).unwrap();
         let derivation_path = DerivationPath::from_str("m/44'/1'/0'/0/0").unwrap();
 
         let address = client
@@ -236,7 +236,7 @@ mod tests {
                 input: vec![previous_txin],
                 output: vec![TxOut {
                     value: Amount::from_sat(50),
-                    script_pubkey: script_pubkey,
+                    script_pubkey,
                 }],
             },
             xpub: Default::default(),
