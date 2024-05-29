@@ -1,4 +1,6 @@
+use core::fmt;
 use std::convert::TryFrom;
+use std::fmt::{Display, Formatter};
 use std::ops::Deref;
 use std::str::FromStr;
 
@@ -260,9 +262,9 @@ where
     }
 }
 
-impl ToString for HWIDeviceType {
-    fn to_string(&self) -> String {
-        match self {
+impl Display for HWIDeviceType {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        let name = match self {
             Self::Ledger => String::from("ledger"),
             Self::Trezor => String::from("trezor"),
             Self::BitBox01 => String::from("digitalbitbox"),
@@ -271,7 +273,8 @@ impl ToString for HWIDeviceType {
             Self::Coldcard => String::from("coldcard"),
             Self::Jade => String::from("jade"),
             Self::Other(name) => name.to_string(),
-        }
+        };
+        fmt::Display::fmt(&name, f)
     }
 }
 
