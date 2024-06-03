@@ -15,6 +15,7 @@ use serde::{Deserialize, Deserializer};
 
 #[cfg(feature = "miniscript")]
 use miniscript::{Descriptor, DescriptorPublicKey};
+use pyo3::prelude::PyAnyMethods;
 
 use crate::error::{Error, ErrorCode};
 
@@ -113,7 +114,7 @@ pub enum HWIAddressType {
 
 impl IntoPy<PyObject> for HWIAddressType {
     fn into_py(self, py: pyo3::Python) -> PyObject {
-        let addrtype = PyModule::import(py, "hwilib.common")
+        let addrtype = PyModule::import_bound(py, "hwilib.common")
             .unwrap()
             .getattr("AddressType")
             .unwrap();
@@ -133,7 +134,7 @@ impl IntoPy<PyObject> for HWIChain {
     fn into_py(self, py: pyo3::Python) -> PyObject {
         use bitcoin::Network::*;
 
-        let chain = PyModule::import(py, "hwilib.common")
+        let chain = PyModule::import_bound(py, "hwilib.common")
             .unwrap()
             .getattr("Chain")
             .unwrap();
