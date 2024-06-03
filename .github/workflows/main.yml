@@ -9,6 +9,7 @@ on:
 
 env:
   CARGO_TERM_COLOR: always
+  OPENSSL_CONF: ci/openssl.cnf
 
 jobs:
   fmt:
