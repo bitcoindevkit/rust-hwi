@@ -1,4 +1,6 @@
+use core::fmt;
 use std::convert::TryFrom;
+use std::fmt::{Display, Formatter};
 use std::ops::Deref;
 use std::str::FromStr;
 
@@ -13,6 +15,7 @@ use serde::{Deserialize, Deserializer};
 
 #[cfg(feature = "miniscript")]
 use miniscript::{Descriptor, DescriptorPublicKey};
+use pyo3::prelude::PyAnyMethods;
 
 use crate::error::{Error, ErrorCode};
 
@@ -111,7 +114,7 @@ pub enum HWIAddressType {
 
 impl IntoPy<PyObject> for HWIAddressType {
     fn into_py(self, py: pyo3::Python) -> PyObject {
-        let addrtype = PyModule::import(py, "hwilib.common")
+        let addrtype = PyModule::import_bound(py, "hwilib.common")
             .unwrap()
             .getattr("AddressType")
             .unwrap();
@@ -131,7 +134,7 @@ impl IntoPy<PyObject> for HWIChain {
     fn into_py(self, py: pyo3::Python) -> PyObject {
         use bitcoin::Network::*;
 
-        let chain = PyModule::import(py, "hwilib.common")
+        let chain = PyModule::import_bound(py, "hwilib.common")
             .unwrap()
             .getattr("Chain")
             .unwrap();
@@ -260,9 +263,9 @@ where
     }
 }
 
-impl ToString for HWIDeviceType {
-    fn to_string(&self) -> String {
-        match self {
+impl Display for HWIDeviceType {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        let name = match self {
             Self::Ledger => String::from("ledger"),
             Self::Trezor => String::from("trezor"),
             Self::BitBox01 => String::from("digitalbitbox"),
@@ -271,7 +274,8 @@ impl ToString for HWIDeviceType {
             Self::Coldcard => String::from("coldcard"),
             Self::Jade => String::from("jade"),
             Self::Other(name) => name.to_string(),
-        }
+        };
+        fmt::Display::fmt(&name, f)
     }
 }
 

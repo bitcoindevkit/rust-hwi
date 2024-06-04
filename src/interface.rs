@@ -36,8 +36,9 @@ struct HWILib {
 impl HWILib {
     pub fn initialize() -> Result<Self, Error> {
         Python::with_gil(|py| {
-            let commands: Py<PyModule> = PyModule::import(py, "hwilib.commands")?.into();
-            let json_dumps: Py<PyAny> = PyModule::import(py, "json")?.getattr("dumps")?.into();
+            let commands: Py<PyModule> = PyModule::import_bound(py, "hwilib.commands")?.into();
+            let json_dumps: Py<PyAny> =
+                PyModule::import_bound(py, "json")?.getattr("dumps")?.into();
             Ok(HWILib {
                 commands,
                 json_dumps,
@@ -497,7 +498,7 @@ impl HWIClient {
     pub fn get_version() -> Option<String> {
         Python::with_gil(|py| {
             Some(
-                PyModule::import(py, "hwilib")
+                PyModule::import_bound(py, "hwilib")
                     .ok()?
                     .getattr("__version__")
                     .expect("Should have a __version__")
