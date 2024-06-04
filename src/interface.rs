@@ -224,8 +224,9 @@ impl HWIClient {
         path: &DerivationPath,
         expert: bool,
     ) -> Result<HWIExtendedPubKey, Error> {
+        let prefixed_path = format!("m/{}", path);
         Python::with_gil(|py| {
-            let func_args = (&self.hw_client, path.to_string(), expert);
+            let func_args = (&self.hw_client, prefixed_path, expert);
             let output = self
                 .hwilib
                 .commands
@@ -242,8 +243,9 @@ impl HWIClient {
         message: &str,
         path: &DerivationPath,
     ) -> Result<HWISignature, Error> {
+        let prefixed_path = format!("m/{}", path);
         Python::with_gil(|py| {
-            let func_args = (&self.hw_client, message, path.to_string());
+            let func_args = (&self.hw_client, message, prefixed_path);
             let output = self
                 .hwilib
                 .commands
@@ -279,7 +281,7 @@ impl HWIClient {
         Python::with_gil(|py| {
             let mut p_str = py.None();
             if let Some(p) = path {
-                p_str = format!("{}/*", p).into_py(py);
+                p_str = format!("m/{}/*", p).into_py(py);
             }
             let func_args = (
                 &self.hw_client,
@@ -345,8 +347,9 @@ impl HWIClient {
         address_type: HWIAddressType,
     ) -> Result<HWIAddress, Error> {
         Python::with_gil(|py| {
+            let prefixed_path = format!("m/{}", path);
             let descriptor = py.None();
-            let func_args = (&self.hw_client, path.to_string(), descriptor, address_type);
+            let func_args = (&self.hw_client, prefixed_path, descriptor, address_type);
             let output = self
                 .hwilib
                 .commands
