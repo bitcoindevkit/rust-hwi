@@ -11,12 +11,12 @@ readme = "README.md"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-bdk_wallet = { version = "1.0.0-beta.1" }
 bitcoin = { version = "0.32", features = ["serde", "base64"] }
 pyo3 = { version = "0.21.2", features = ["auto-initialize"] }
 serde = { version = "^1.0", features = ["derive"] }
 serde_json = { version = "^1.0" }
 
+bdk_wallet = { version = "1.0.0-beta.1", optional = true }
 miniscript = { version = "12.0", features = ["serde"], optional = true }
 
 [dev-dependencies]
@@ -24,3 +24,5 @@ serial_test = "0.6.0"
 
 [features]
 doctest = []
+signer = ["dep:bdk_wallet"]
+miniscript = ["dep:miniscript"]

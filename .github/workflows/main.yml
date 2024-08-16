@@ -42,9 +42,10 @@ jobs:
       matrix:
         rust:
           - version: stable # STABLE
-            features: miniscript
           - version: 1.63.0 # MSRV
-            features: miniscript
+        features:
+          - miniscript
+          - signer
         emulator:
           - name: trezor
           - name: ledger
@@ -77,7 +78,7 @@ jobs:
       - name: Update toolchain
         run: rustup update
       - name: Test
-        run: cargo test --features ${{ matrix.rust.features }}
+        run: cargo test --features ${{ matrix.features }}
       - name: Wipe
         run: cargo test test_wipe_device -- --ignored
   test-readme-examples:
