@@ -4,19 +4,24 @@
 //! ```no_run
 //! use bitcoin::bip32::{ChildNumber, DerivationPath};
 //! use hwi::error::Error;
+//! use hwi::implementations::python_implementation::PythonHWIImplementation;
 //! use hwi::interface::HWIClient;
 //! use hwi::types;
 //! use std::str::FromStr;
 //!
 //! fn main() -> Result<(), Error> {
 //!     // Find information about devices
-//!     let mut devices = HWIClient::enumerate()?;
+//!     let mut devices = HWIClient::<PythonHWIImplementation>::enumerate()?;
 //!     if devices.is_empty() {
 //!         panic!("No device found!");
 //!     }
 //!     let device = devices.remove(0)?;
 //!     // Create a client for a device
-//!     let client = HWIClient::get_client(&device, true, bitcoin::Network::Testnet.into())?;
+//!     let client = HWIClient::<PythonHWIImplementation>::get_client(
+//!         &device,
+//!         true,
+//!         bitcoin::Network::Testnet.into(),
+//!     )?;
 //!     // Display the address from path
 //!     let derivation_path = DerivationPath::from_str("m/44'/1'/0'/0/0").unwrap();
 //!     let hwi_address =
@@ -36,11 +41,13 @@ pub use interface::HWIClient;
 #[cfg(feature = "doctest")]
 pub mod doctest;
 pub mod error;
+pub mod implementations;
 pub mod interface;
 pub mod types;
 
 #[cfg(test)]
 mod tests {
+    use crate::implementations::python_implementation::PythonHWIImplementation;
     use crate::types::{self, HWIDeviceType, TESTNET};
     use crate::HWIClient;
     use std::collections::BTreeMap;
@@ -58,7 +65,7 @@ mod tests {
     #[test]
     #[serial]
     fn test_enumerate() {
-        let devices = HWIClient::enumerate().unwrap();
+        let devices = HWIClient::<PythonHWIImplementation>::enumerate().unwrap();
         assert!(!devices.is_empty());
     }
 
@@ -66,7 +73,7 @@ mod tests {
     #[serial]
     #[ignore]
     fn test_find_trezor_device() {
-        HWIClient::find_device(
+        HWIClient::<PythonHWIImplementation>::find_device(
             None,
             Some(HWIDeviceType::Trezor),
             None,
@@ -76,14 +83,14 @@ mod tests {
         .unwrap();
     }
 
-    fn get_first_device() -> HWIClient {
-        let devices = HWIClient::enumerate().unwrap();
+    fn get_first_device() -> HWIClient<PythonHWIImplementation> {
+        let devices = HWIClient::<PythonHWIImplementation>::enumerate().unwrap();
         let device = devices
             .first()
             .expect("No devices found. Either plug in a hardware wallet, or start a simulator.")
             .as_ref()
             .expect("Error when opening the first device");
-        HWIClient::get_client(device, true, TESTNET).unwrap()
+        HWIClient::<PythonHWIImplementation>::get_client(device, true, TESTNET).unwrap()
     }
 
     #[test]
@@ -194,12 +201,14 @@ mod tests {
     // #[serial]
     // fn test_display_address_with_path_taproot() {}
 
+    // For testing on Coldcard, make sure to disable Max Network Fee in the Coldcard settings
     #[test]
     #[serial]
     fn test_sign_tx() {
-        let devices = HWIClient::enumerate().unwrap();
+        let devices = HWIClient::<PythonHWIImplementation>::enumerate().unwrap();
         let device = devices.first().unwrap().as_ref().unwrap();
-        let client = HWIClient::get_client(device, true, TESTNET).unwrap();
+        let client =
+            HWIClient::<PythonHWIImplementation>::get_client(device, true, TESTNET).unwrap();
         let derivation_path = DerivationPath::from_str("m/44'/1'/0'/0/0").unwrap();
 
         let address = client
@@ -325,21 +334,21 @@ mod tests {
     #[ignore]
     fn test_install_udev_rules() {
         if cfg!(target_os = "linux") {
-            HWIClient::install_udev_rules(None, None).unwrap()
+            HWIClient::<PythonHWIImplementation>::install_udev_rules(None, None).unwrap()
         }
     }
 
     #[test]
     #[serial]
     fn test_set_log_level() {
-        HWIClient::set_log_level(types::LogLevel::DEBUG).unwrap();
+        HWIClient::<PythonHWIImplementation>::set_log_level(types::LogLevel::DEBUG).unwrap();
         test_enumerate();
     }
 
     #[test]
     #[serial]
     fn test_toggle_passphrase() {
-        let devices = HWIClient::enumerate().unwrap();
+        let devices = HWIClient::<PythonHWIImplementation>::enumerate().unwrap();
         let unsupported = [
             HWIDeviceType::Ledger,
             HWIDeviceType::BitBox01,
@@ -352,7 +361,8 @@ mod tests {
                 // These devices don't support togglepassphrase
                 continue;
             }
-            let client = HWIClient::get_client(&device, true, TESTNET).unwrap();
+            let client =
+                HWIClient::<PythonHWIImplementation>::get_client(&device, true, TESTNET).unwrap();
             client.toggle_passphrase().unwrap();
             break;
         }
@@ -361,7 +371,7 @@ mod tests {
     #[test]
     #[serial]
     fn test_get_version() {
-        HWIClient::get_version().unwrap();
+        HWIClient::<PythonHWIImplementation>::get_version().unwrap();
     }
 
     #[test]
@@ -369,7 +379,7 @@ mod tests {
     #[ignore]
     // At the moment (hwi v2.1.1 and trezor-firmware core v2.5.2) work only with physical devices and NOT emulators!
     fn test_setup_trezor_device() {
-        let client = HWIClient::find_device(
+        let client = HWIClient::<PythonHWIImplementation>::find_device(
             None,
             Some(HWIDeviceType::Trezor),
             None,
@@ -385,7 +395,7 @@ mod tests {
     #[ignore]
     // At the moment (hwi v2.1.1 and trezor-firmware core v2.5.2) work only with physical devices and NOT emulators!
     fn test_restore_trezor_device() {
-        let client = HWIClient::find_device(
+        let client = HWIClient::<PythonHWIImplementation>::find_device(
             None,
             Some(HWIDeviceType::Trezor),
             None,
@@ -399,7 +409,7 @@ mod tests {
     #[test]
     #[serial]
     fn test_backup_device() {
-        let devices = HWIClient::enumerate().unwrap();
+        let devices = HWIClient::<PythonHWIImplementation>::enumerate().unwrap();
         let supported = [
             HWIDeviceType::BitBox01,
             HWIDeviceType::BitBox02,
@@ -408,7 +418,9 @@ mod tests {
         for device in devices {
             let device = device.unwrap();
             if supported.contains(&device.device_type) {
-                let client = HWIClient::get_client(&device, true, TESTNET).unwrap();
+                let client =
+                    HWIClient::<PythonHWIImplementation>::get_client(&device, true, TESTNET)
+                        .unwrap();
                 client.backup_device(Some("My Label"), None).unwrap();
             }
         }
@@ -418,7 +430,7 @@ mod tests {
     #[serial]
     #[ignore]
     fn test_wipe_device() {
-        let devices = HWIClient::enumerate().unwrap();
+        let devices = HWIClient::<PythonHWIImplementation>::enumerate().unwrap();
         let unsupported = [
             HWIDeviceType::Ledger,
             HWIDeviceType::Coldcard,
@@ -430,7 +442,8 @@ mod tests {
                 // These devices don't support wipe
                 continue;
             }
-            let client = HWIClient::get_client(&device, true, TESTNET).unwrap();
+            let client =
+                HWIClient::<PythonHWIImplementation>::get_client(&device, true, TESTNET).unwrap();
             client.wipe_device().unwrap();
         }
     }
@@ -439,6 +452,6 @@ mod tests {
     #[serial]
     #[ignore]
     fn test_install_hwi() {
-        HWIClient::install_hwilib(Some("2.1.1")).unwrap();
+        HWIClient::<PythonHWIImplementation>::install_hwilib(Some("2.1.1")).unwrap();
     }
 }

@@ -295,3 +295,51 @@ pub enum HWIWordCount {
     W18 = 18,
     W24 = 24,
 }
+
+pub trait HWIImplementation {
+    fn enumerate() -> Result<String, Error>;
+    fn get_client(device: &HWIDevice, expert: bool, chain: HWIChain) -> Result<Self, Error>
+    where
+        Self: Sized;
+    fn find_device(
+        password: Option<&str>,
+        device_type: Option<HWIDeviceType>,
+        fingerprint: Option<&str>,
+        expert: bool,
+        chain: HWIChain,
+    ) -> Result<Self, Error>
+    where
+        Self: Sized;
+    fn get_xpub(&self, path: &str, expert: bool) -> Result<String, Error>;
+    fn sign_tx(&self, psbt: &Psbt) -> Result<String, Error>;
+    fn get_master_xpub(&self, addrtype: HWIAddressType, account: u32) -> Result<String, Error>;
+    fn sign_message(&self, message: &str, path: &str) -> Result<String, Error>;
+    fn display_address_with_desc(&self, descriptor: &str) -> Result<String, Error>;
+    fn display_address_with_path(
+        &self,
+        path: &str,
+        address_type: HWIAddressType,
+    ) -> Result<String, Error>;
+    fn toggle_passphrase(&self) -> Result<String, Error>;
+    fn setup_device(&self, label: &str, passphrase: &str) -> Result<String, Error>;
+    fn restore_device(&self, label: &str, word_count: u8) -> Result<String, Error>;
+    fn backup_device(&self, label: &str, backup_passphrase: &str) -> Result<String, Error>;
+    fn wipe_device(&self) -> Result<String, Error>;
+    fn get_descriptors(&self, account: u32) -> Result<String, Error>;
+    #[allow(clippy::too_many_arguments)]
+    fn get_keypool(
+        &self,
+        keypool: bool,
+        internal: bool,
+        addr_type: HWIAddressType,
+        addr_all: bool,
+        account: u32,
+        path: Option<String>,
+        start: u32,
+        end: u32,
+    ) -> Result<String, Error>;
+    fn get_version() -> Result<String, Error>;
+    fn install_udev_rules(source: &str, location: &str) -> Result<String, Error>;
+    fn set_log_level(level: LogLevel) -> Result<(), Error>;
+    fn install_hwilib(version: String) -> Result<(), Error>;
+}
