@@ -112,6 +112,17 @@ pub enum HWIAddressType {
     Tap,
 }
 
+impl fmt::Display for HWIAddressType {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(match self {
+            HWIAddressType::Legacy => "LEGACY",
+            HWIAddressType::Sh_Wit => "SH_WIT",
+            HWIAddressType::Wit => "WIT",
+            HWIAddressType::Tap => "TAP",
+        })
+    }
+}
+
 impl IntoPy<PyObject> for HWIAddressType {
     fn into_py(self, py: pyo3::Python) -> PyObject {
         let addrtype = PyModule::import_bound(py, "hwilib.common")
@@ -129,6 +140,18 @@ impl IntoPy<PyObject> for HWIAddressType {
 
 #[derive(Clone, Eq, PartialEq, Debug, Deserialize)]
 pub struct HWIChain(bitcoin::Network);
+
+impl fmt::Display for HWIChain {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(match self.0 {
+            bitcoin::Network::Bitcoin => "MAIN",
+            bitcoin::Network::Testnet => "TEST",
+            bitcoin::Network::Regtest => "REGTEST",
+            bitcoin::Network::Signet => "SIGNET",
+            _ => "UNKNOWN",
+        })
+    }
+}
 
 impl IntoPy<PyObject> for HWIChain {
     fn into_py(self, py: pyo3::Python) -> PyObject {
@@ -234,6 +257,7 @@ impl From<HWIStatus> for Result<(), Error> {
 }
 
 #[derive(Clone, Eq, PartialEq, Debug, Deserialize)]
+#[serde(rename_all = "lowercase")]
 pub enum HWIDeviceType {
     Ledger,
     Trezor,
@@ -342,4 +366,8 @@ pub trait HWIImplementation {
     fn install_udev_rules(source: &str, location: &str) -> Result<String, Error>;
     fn set_log_level(level: LogLevel) -> Result<(), Error>;
     fn install_hwilib(version: String) -> Result<(), Error>;
+}
+
+pub trait HWIBinaryExecutor {
+    fn execute_command(args: Vec<String>) -> Result<String, Error>;
 }
