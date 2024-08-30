@@ -79,9 +79,9 @@ jobs:
       - name: Download and Install HWI
         run: ./get_hwi.sh
       - name: Test
-        run: cargo test --features ${{ matrix.rust.features }}
+        run: cargo test --features ${{ matrix.rust.features }} -- --test-threads=1
       - name: Wipe
-        run: cargo test test_wipe_device -- --ignored
+        run: cargo test test_wipe_device -- --ignored --test-threads=1
   test-readme-examples:
     runs-on: ubuntu-22.04
     steps:
