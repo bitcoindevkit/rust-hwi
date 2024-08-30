@@ -11,7 +11,7 @@ use bitcoin::Psbt;
 
 use pyo3::types::PyModule;
 use pyo3::{IntoPy, PyObject};
-use serde::{Deserialize, Deserializer};
+use serde::{Deserialize, Deserializer, Serialize};
 
 #[cfg(feature = "miniscript")]
 use miniscript::{Descriptor, DescriptorPublicKey};
@@ -19,7 +19,7 @@ use pyo3::prelude::PyAnyMethods;
 
 use crate::error::{Error, ErrorCode};
 
-#[derive(Clone, Eq, PartialEq, Debug, Deserialize)]
+#[derive(Clone, Eq, PartialEq, Debug, Deserialize, Serialize)]
 pub struct HWIExtendedPubKey {
     pub xpub: Xpub,
 }
@@ -32,7 +32,7 @@ impl Deref for HWIExtendedPubKey {
     }
 }
 
-#[derive(Clone, Eq, PartialEq, Debug, Deserialize)]
+#[derive(Clone, Eq, PartialEq, Debug, Deserialize, Serialize)]
 pub struct HWISignature {
     #[serde(deserialize_with = "from_b64")]
     pub signature: Vec<u8>,
@@ -55,12 +55,12 @@ impl Deref for HWISignature {
     }
 }
 
-#[derive(Clone, Eq, PartialEq, Debug, Deserialize)]
+#[derive(Clone, Eq, PartialEq, Debug, Deserialize, Serialize)]
 pub struct HWIAddress {
     pub address: Address<NetworkUnchecked>,
 }
 
-#[derive(Clone, Eq, PartialEq, Debug, Deserialize)]
+#[derive(Clone, Eq, PartialEq, Debug, Deserialize, Serialize)]
 pub struct HWIPartiallySignedTransaction {
     #[serde(deserialize_with = "deserialize_psbt")]
     pub psbt: Psbt,
@@ -84,7 +84,7 @@ impl ToDescriptor for String {}
 #[cfg(feature = "miniscript")]
 impl ToDescriptor for Descriptor<DescriptorPublicKey> {}
 
-#[derive(Clone, Eq, PartialEq, Debug, Deserialize)]
+#[derive(Clone, Eq, PartialEq, Debug, Deserialize, Serialize)]
 pub struct HWIDescriptor<T>
 where
     T: ToDescriptor,
@@ -93,7 +93,7 @@ where
     pub receive: Vec<T>,
 }
 
-#[derive(Clone, Eq, PartialEq, Debug, Deserialize)]
+#[derive(Clone, Eq, PartialEq, Debug, Deserialize, Serialize)]
 pub struct HWIKeyPoolElement {
     pub desc: String,
     pub range: Vec<u32>,
@@ -103,7 +103,7 @@ pub struct HWIKeyPoolElement {
     pub watchonly: bool,
 }
 
-#[derive(Clone, Eq, PartialEq, Debug, Deserialize)]
+#[derive(Clone, Eq, PartialEq, Debug, Deserialize, Serialize)]
 #[allow(non_camel_case_types)]
 pub enum HWIAddressType {
     Legacy,
@@ -138,7 +138,7 @@ impl IntoPy<PyObject> for HWIAddressType {
     }
 }
 
-#[derive(Clone, Eq, PartialEq, Debug, Deserialize)]
+#[derive(Clone, Eq, PartialEq, Debug, Deserialize, Serialize)]
 pub struct HWIChain(bitcoin::Network);
 
 impl fmt::Display for HWIChain {
@@ -186,7 +186,7 @@ pub const TESTNET: HWIChain = HWIChain(Network::Testnet);
 // Used internally to deserialize the result of `hwi enumerate`. This might
 // contain an `error`, when it does, it might not contain all the fields `HWIDevice`
 // is supposed to have - for this reason, they're all Option.
-#[derive(Clone, Eq, PartialEq, Debug, Deserialize)]
+#[derive(Clone, Eq, PartialEq, Debug, Deserialize, Serialize)]
 pub(crate) struct HWIDeviceInternal {
     #[serde(rename(deserialize = "type"))]
     pub device_type: Option<String>,
@@ -199,7 +199,7 @@ pub(crate) struct HWIDeviceInternal {
     pub code: Option<i8>,
 }
 
-#[derive(Clone, Eq, PartialEq, Debug, Deserialize)]
+#[derive(Clone, Eq, PartialEq, Debug, Deserialize, Serialize)]
 pub struct HWIDevice {
     #[serde(rename(deserialize = "type"))]
     pub device_type: HWIDeviceType,
@@ -238,7 +238,7 @@ impl TryFrom<HWIDeviceInternal> for HWIDevice {
     }
 }
 
-#[derive(Clone, Eq, PartialEq, Debug, Deserialize)]
+#[derive(Clone, Eq, PartialEq, Debug, Deserialize, Serialize)]
 pub struct HWIStatus {
     pub success: bool,
 }
@@ -256,7 +256,7 @@ impl From<HWIStatus> for Result<(), Error> {
     }
 }
 
-#[derive(Clone, Eq, PartialEq, Debug, Deserialize)]
+#[derive(Clone, Eq, PartialEq, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "lowercase")]
 pub enum HWIDeviceType {
     Ledger,
