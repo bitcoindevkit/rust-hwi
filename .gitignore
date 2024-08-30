@@ -26,3 +26,6 @@ tags
 venv/
 
 backup*
+
+# Binary downloaded for tests
+hwi-binary/

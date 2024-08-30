@@ -76,6 +76,8 @@ jobs:
         run: rustup set profile minimal
       - name: Update toolchain
         run: rustup update
+      - name: Download and Install HWI
+        run: ./get_hwi.sh
       - name: Test
         run: cargo test --features ${{ matrix.rust.features }}
       - name: Wipe
