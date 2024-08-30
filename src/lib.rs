@@ -450,19 +450,19 @@ mod tests {
         };
     }
 
-    mod python_tests {
+    mod test_python_tests {
         use super::*;
         generate_enumerate_test!(PythonHWIImplementation);
     }
 
-    mod binary_tests {
+    mod test_binary_tests {
         use super::*;
         generate_enumerate_test!(BinaryHWIImplementation<HWIBinaryExecutorImpl>);
     }
 
     #[test]
     #[serial]
-    fn test_set_log_level() {
+    fn test_python_set_log_level() {
         HWIClient::<PythonHWIImplementation>::set_log_level(types::LogLevel::DEBUG).unwrap();
         let devices = HWIClient::<PythonHWIImplementation>::enumerate().unwrap();
         assert!(!devices.is_empty());
@@ -471,21 +471,21 @@ mod tests {
     #[test]
     #[serial]
     #[ignore]
-    fn test_install_hwi() {
+    fn test_python_install_hwi() {
         HWIClient::<PythonHWIImplementation>::install_hwilib(Some("2.1.1")).unwrap();
     }
 
     #[test]
     #[serial]
     #[ignore]
-    fn test_wipe_device_pyhton() {
+    fn test_python_wipe_device() {
         wipe_device::<PythonHWIImplementation>();
     }
 
     #[test]
     #[serial]
     #[ignore]
-    fn test_wipe_device_binary() {
+    fn test_binary_wipe_device() {
         wipe_device::<BinaryHWIImplementation<HWIBinaryExecutorImpl>>();
     }
 
