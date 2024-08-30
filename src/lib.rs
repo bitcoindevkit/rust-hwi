@@ -50,7 +50,7 @@ mod tests {
     use crate::error::Error;
     use crate::implementations::binary_implementation::BinaryHWIImplementation;
     use crate::implementations::python_implementation::PythonHWIImplementation;
-    use crate::types::{self, HWIBinaryExecutor, HWIDeviceType, TESTNET};
+    use crate::types::{self, HWIBinaryExecutor, HWIDeviceType, HWIImplementation, TESTNET};
     use crate::HWIClient;
     use std::collections::BTreeMap;
     use std::str::FromStr;
@@ -447,27 +447,6 @@ mod tests {
                     }
                 }
             }
-
-            #[test]
-            #[serial]
-            #[ignore]
-            fn test_wipe_device() {
-                let devices = HWIClient::<$impl>::enumerate().unwrap();
-                let unsupported = [
-                    HWIDeviceType::Ledger,
-                    HWIDeviceType::Coldcard,
-                    HWIDeviceType::Jade,
-                ];
-                for device in devices {
-                    let device = device.unwrap();
-                    if unsupported.contains(&device.device_type) {
-                        // These devices don't support wipe
-                        continue;
-                    }
-                    let client = HWIClient::<$impl>::get_client(&device, true, TESTNET).unwrap();
-                    client.wipe_device().unwrap();
-                }
-            }
         };
     }
 
@@ -494,5 +473,37 @@ mod tests {
     #[ignore]
     fn test_install_hwi() {
         HWIClient::<PythonHWIImplementation>::install_hwilib(Some("2.1.1")).unwrap();
+    }
+
+    #[test]
+    #[serial]
+    #[ignore]
+    fn test_wipe_device_pyhton() {
+        wipe_device::<PythonHWIImplementation>();
+    }
+
+    #[test]
+    #[serial]
+    #[ignore]
+    fn test_wipe_device_binary() {
+        wipe_device::<BinaryHWIImplementation<HWIBinaryExecutorImpl>>();
+    }
+
+    fn wipe_device<T: HWIImplementation>() {
+        let devices = HWIClient::<T>::enumerate().unwrap();
+        let unsupported = [
+            HWIDeviceType::Ledger,
+            HWIDeviceType::Coldcard,
+            HWIDeviceType::Jade,
+        ];
+        for device in devices {
+            let device = device.unwrap();
+            if unsupported.contains(&device.device_type) {
+                // These devices don't support wipe
+                continue;
+            }
+            let client = HWIClient::<T>::get_client(&device, true, TESTNET).unwrap();
+            client.wipe_device().unwrap();
+        }
     }
 }
