@@ -497,6 +497,36 @@ impl HWIClient {
         })
     }
 
+    /// Prompt PIN on a device
+    pub fn prompt_pin(&self) -> Result<(), Error> {
+        Python::with_gil(|py| {
+            let func_args = (&self.hw_client,);
+            let output = self
+                .hwilib
+                .commands
+                .getattr(py, "prompt_pin")?
+                .call1(py, func_args)?;
+            let output = self.hwilib.json_dumps.call1(py, (output,))?;
+            let status: HWIStatus = deserialize_obj!(&output.to_string())?;
+            status.into()
+        })
+    }
+
+    /// Send PIN to a device
+    pub fn send_pin(&self, pin: &str) -> Result<(), Error> {
+        Python::with_gil(|py| {
+            let func_args = (&self.hw_client, pin);
+            let output = self
+                .hwilib
+                .commands
+                .getattr(py, "send_pin")?
+                .call1(py, func_args)?;
+            let output = self.hwilib.json_dumps.call1(py, (output,))?;
+            let status: HWIStatus = deserialize_obj!(&output.to_string())?;
+            status.into()
+        })
+    }
+
     /// Get the installed version of hwilib. Returns None if hwi is not installed.
     pub fn get_version() -> Option<String> {
         Python::with_gil(|py| {
