@@ -88,12 +88,12 @@ pub mod types;
 
 #[cfg(test)]
 mod tests {
-    use crate::types::{self, HWIDeviceType, TESTNET};
+    use crate::types::{self, HWIChain, HWIDevice, HWIDeviceType, TESTNET};
     use crate::HWIClient;
     use std::collections::BTreeMap;
     use std::str::FromStr;
 
-    use bitcoin::bip32::{DerivationPath, KeySource};
+    use bitcoin::bip32::{DerivationPath, Fingerprint, KeySource};
     use bitcoin::locktime::absolute;
     use bitcoin::psbt::{Input, Output};
     use bitcoin::{secp256k1, Transaction};
@@ -480,6 +480,41 @@ mod tests {
             let client = HWIClient::get_client(&device, true, TESTNET).unwrap();
             client.wipe_device().unwrap();
         }
+    }
+
+    #[test]
+    #[serial]
+    #[ignore = "Needs a Trezor One device for the test"]
+    fn test_prompt_pin_to_trezor_device() {
+        let client = HWIClient::find_device(
+            None,
+            Some(HWIDeviceType::Trezor),
+            None,
+            false,
+            Network::Testnet,
+        )
+        .unwrap();
+        client.prompt_pin().unwrap();
+    }
+
+    #[test]
+    #[serial]
+    #[ignore = "Needs a Trezor One device for the test"]
+    fn test_send_pin_to_trezor_device() {
+        let client = HWIClient::get_client(
+            &HWIDevice {
+                device_type: HWIDeviceType::Trezor,
+                model: "trezor_1".to_string(),
+                path: "webusb:000:1:2".to_string(),
+                needs_pin_sent: true,
+                needs_passphrase_sent: false,
+                fingerprint: Fingerprint::from_str("00000000").unwrap(),
+            },
+            false,
+            HWIChain::from(Network::Testnet),
+        )
+        .unwrap();
+        client.send_pin("123456").unwrap();
     }
 
     #[test]
