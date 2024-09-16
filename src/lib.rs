@@ -1,6 +1,9 @@
-//! Rust wrapper for the [Bitcoin Hardware Wallet Interface](https://github.com/bitcoin-core/HWI/).
+//! This crate is contains both:
+//! - [`HWIClient`]: A Rust wrapper for the [Bitcoin Hardware Wallet Interface](https://github.com/bitcoin-core/HWI/).
+//! - [`HWISigner`]: An implementation of a [`TransactionSigner`] to be used with hardware wallets, that relies on [`HWIClient`].
 //!
-//! # Example - display address with path
+//! # HWIClient Example:
+//! ## Display address with path
 //! ```no_run
 //! use bitcoin::bip32::{ChildNumber, DerivationPath};
 //! use hwi::error::Error;
@@ -30,6 +33,46 @@
 //!     Ok(())
 //! }
 //! ```
+//!
+//! # HWISigner Example:
+//! ## Add custom [`HWISigner`] to [`Wallet`]
+//! ```no_run
+//! # #[cfg(feature = "signer")]
+//! # {
+//! use bdk_wallet::bitcoin::Network;
+//! use bdk_wallet::descriptor::Descriptor;
+//! use bdk_wallet::signer::SignerOrdering;
+//! use bdk_wallet::{KeychainKind, SignOptions, Wallet};
+//! use hwi::{HWIClient, HWISigner};
+//! use std::str::FromStr;
+//! use std::sync::Arc;
+//!
+//! fn main() -> Result<(), Box<dyn std::error::Error>> {
+//!     let mut devices = HWIClient::enumerate()?;
+//!     if devices.is_empty() {
+//!         panic!("No devices found!");
+//!     }
+//!     let first_device = devices.remove(0)?;
+//!     let custom_signer = HWISigner::from_device(&first_device, Network::Testnet.into())?;
+//!
+//!     let mut wallet = Wallet::create("", "")
+//!         .network(Network::Testnet)
+//!         .create_wallet_no_persist()?;
+//!
+//!     // Adding the hardware signer to the BDK wallet
+//!     wallet.add_signer(
+//!         KeychainKind::External,
+//!         SignerOrdering(200),
+//!         Arc::new(custom_signer),
+//!     );
+//!
+//!     Ok(())
+//! }
+//! # }
+//! ```
+//!
+//! [`TransactionSigner`]: https://docs.rs/bdk_wallet/latest/bdk_wallet/signer/trait.TransactionSigner.html
+//! [`Wallet`]: https://docs.rs/bdk_wallet/1.0.0-beta.1/bdk_wallet/struct.Wallet.html
 
 #[cfg(test)]
 #[macro_use]
@@ -37,12 +80,16 @@ extern crate serial_test;
 extern crate core;
 
 pub use interface::HWIClient;
+#[cfg(feature = "signer")]
+pub use signer::HWISigner;
 
 #[cfg(feature = "doctest")]
 pub mod doctest;
 pub mod error;
 pub mod implementations;
 pub mod interface;
+#[cfg(feature = "signer")]
+pub mod signer;
 pub mod types;
 
 #[cfg(test)]

@@ -1,6 +1,6 @@
 [package]
 name = "hwi"
-version = "0.9.0"
+version = "0.10.0"
 authors = ["Daniela Brozzoni <danielabrozzoni@protonmail.com>"]
 edition = "2018"
 license = "MIT"
@@ -12,10 +12,11 @@ readme = "README.md"
 
 [dependencies]
 bitcoin = { version = "0.32", features = ["serde", "base64"] }
+pyo3 = { version = "0.21.2", features = ["auto-initialize"] }
 serde = { version = "^1.0", features = ["derive"] }
 serde_json = { version = "^1.0" }
-pyo3 = { version = "0.21.2", features = ["auto-initialize"] }
 
+bdk_wallet = { version = "1.0.0-beta.3", optional = true }
 miniscript = { version = "12.0", features = ["serde"], optional = true }
 
 [dev-dependencies]
@@ -23,3 +24,5 @@ serial_test = "0.6.0"
 
 [features]
 doctest = []
+signer = ["dep:bdk_wallet"]
+miniscript = ["dep:miniscript"]

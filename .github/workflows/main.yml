@@ -42,9 +42,10 @@ jobs:
       matrix:
         rust:
           - version: stable # STABLE
-            features: miniscript
           - version: 1.63.0 # MSRV
-            features: miniscript
+        features:
+          - miniscript
+          - signer
         emulator:
           - name: trezor
           - name: ledger
@@ -79,12 +80,12 @@ jobs:
       - name: Download and Install HWI
         run: ./get_hwi.sh
       - name: Test python
-        run: cargo test --features ${{ matrix.rust.features }} test_python -- --test-threads=1
+        run: cargo test --features ${{ matrix.features }} test_python -- --test-threads=1
       - name: Restart simulator
         if: matrix.emulator.name == 'ledger'
         run: docker restart simulator
       - name: Test binary
-        run: cargo test --features ${{ matrix.rust.features }} test_binary -- --test-threads=1
+        run: cargo test --features ${{ matrix.features }} test_binary -- --test-threads=1
       - name: Wipe python
         run: cargo test test_wipe_device_pyhton -- --ignored --test-threads=1
       - name: Restart simulator
