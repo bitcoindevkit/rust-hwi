@@ -1,6 +1,6 @@
 use core::fmt;
 use std::convert::TryFrom;
-use std::fmt::{Display, Formatter};
+use std::fmt::{Debug, Display, Formatter};
 use std::ops::Deref;
 use std::str::FromStr;
 
@@ -320,7 +320,7 @@ pub enum HWIWordCount {
     W24 = 24,
 }
 
-pub trait HWIImplementation {
+pub trait HWIImplementation: Debug + Send + Sync {
     fn enumerate() -> Result<String, Error>;
     fn get_client(device: &HWIDevice, expert: bool, chain: HWIChain) -> Result<Self, Error>
     where
@@ -368,6 +368,11 @@ pub trait HWIImplementation {
     fn install_hwilib(version: String) -> Result<(), Error>;
 }
 
-pub trait HWIBinaryExecutor {
+#[derive(Clone, Eq, PartialEq, Debug, Copy)]
+pub struct HWIClient<T: HWIImplementation> {
+    pub implementation: T,
+}
+
+pub trait HWIBinaryExecutor: Debug + Send + Sync {
     fn execute_command(args: Vec<String>) -> Result<String, Error>;
 }

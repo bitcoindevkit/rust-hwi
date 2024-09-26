@@ -8,7 +8,7 @@ use serde_json::value::Value;
 
 use crate::error::Error;
 use crate::types::{
-    HWIAddress, HWIAddressType, HWIChain, HWIDescriptor, HWIDevice, HWIDeviceInternal,
+    HWIAddress, HWIAddressType, HWIChain, HWIClient, HWIDescriptor, HWIDevice, HWIDeviceInternal,
     HWIDeviceType, HWIExtendedPubKey, HWIImplementation, HWIKeyPoolElement,
     HWIPartiallySignedTransaction, HWISignature, HWIStatus, HWIWordCount, LogLevel, ToDescriptor,
 };
@@ -22,14 +22,10 @@ macro_rules! deserialize_obj {
     }};
 }
 
-pub struct HWIClient<T: HWIImplementation> {
-    implementation: T,
-}
-
 impl<T: HWIImplementation> HWIClient<T> {
     /// Lists all HW devices currently connected.
     /// ```no_run
-    /// # use hwi::HWIClient;
+    /// # use hwi::types::HWIClient;
     /// # use hwi::implementations::python_implementation::PythonHWIImplementation;
     /// # use hwi::error::Error;
     /// # fn main() -> Result<(), Error> {
@@ -54,7 +50,7 @@ impl<T: HWIImplementation> HWIClient<T> {
     ///
     /// Setting `expert` to `true` will enable additional output for some commands.
     /// ```
-    /// # use hwi::HWIClient;
+    /// # use hwi::types::HWIClient;
     /// # use hwi::types::*;
     /// # use hwi::error::Error;
     /// # use hwi::implementations::python_implementation::PythonHWIImplementation;
@@ -88,7 +84,7 @@ impl<T: HWIImplementation> HWIClient<T> {
     ///
     /// Setting `expert` to `true` will enable additional output for some commands.
     /// ```no_run
-    /// # use hwi::HWIClient;
+    /// # use hwi::types::HWIClient;
     /// # use hwi::types::*;
     /// # use hwi::error::Error;
     /// # use hwi::implementations::python_implementation::PythonHWIImplementation;

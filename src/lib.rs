@@ -8,13 +8,12 @@
 //! use bitcoin::bip32::{ChildNumber, DerivationPath};
 //! use hwi::error::Error;
 //! use hwi::implementations::python_implementation::PythonHWIImplementation;
-//! use hwi::interface::HWIClient;
 //! use hwi::types;
 //! use std::str::FromStr;
 //!
 //! fn main() -> Result<(), Error> {
 //!     // Find information about devices
-//!     let mut devices = HWIClient::<PythonHWIImplementation>::enumerate()?;
+//!     let mut devices = types::HWIClient::<PythonHWIImplementation>::enumerate()?;
 //!     if devices.is_empty() {
 //!         panic!("No device found!");
 //!     }
@@ -79,7 +78,6 @@
 extern crate serial_test;
 extern crate core;
 
-pub use interface::HWIClient;
 #[cfg(feature = "signer")]
 pub use signer::HWISigner;
 
@@ -97,8 +95,9 @@ mod tests {
     use crate::error::Error;
     use crate::implementations::binary_implementation::BinaryHWIImplementation;
     use crate::implementations::python_implementation::PythonHWIImplementation;
-    use crate::types::{self, HWIBinaryExecutor, HWIDeviceType, HWIImplementation, TESTNET};
-    use crate::HWIClient;
+    use crate::types::{
+        self, HWIBinaryExecutor, HWIClient, HWIDeviceType, HWIImplementation, TESTNET,
+    };
     use std::collections::BTreeMap;
     use std::str::FromStr;
 
@@ -112,6 +111,8 @@ mod tests {
 
     #[cfg(feature = "miniscript")]
     use miniscript::{Descriptor, DescriptorPublicKey};
+
+    #[derive(Debug)]
     struct HWIBinaryExecutorImpl;
 
     impl HWIBinaryExecutor for HWIBinaryExecutorImpl {

@@ -57,7 +57,7 @@ pip install -r requirements.txt
 use bitcoin::Network;
 use bitcoin::bip32::DerivationPath;
 use hwi::error::Error;
-use hwi::HWIClient;
+use hwi::types::HWIClient;
 use hwi::implementations::python_implementation::PythonHWIImplementation;
 use std::str::FromStr;
 
