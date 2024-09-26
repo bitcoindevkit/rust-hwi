@@ -78,6 +78,7 @@ pub enum Error {
     Io(std::io::Error),
     Hwi(String, Option<ErrorCode>),
     Python(pyo3::PyErr),
+    NotImplemented,
 }
 
 impl fmt::Display for Error {
@@ -90,6 +91,7 @@ impl fmt::Display for Error {
             Io(_) => f.write_str("I/O error"),
             Hwi(ref s, ref code) => write!(f, "HWI error: {}, ({:?})", s, code),
             Python(_) => f.write_str("python error"),
+            NotImplemented => f.write_str("not implemented"),
         }
     }
 }
@@ -104,6 +106,7 @@ impl std::error::Error for Error {
             Io(ref e) => Some(e),
             Hwi(_, _) => None,
             Python(ref e) => Some(e),
+            NotImplemented => None,
         }
     }
 }

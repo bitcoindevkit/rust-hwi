@@ -3,8 +3,7 @@ use bdk_wallet::bitcoin::secp256k1::{All, Secp256k1};
 use bdk_wallet::bitcoin::Psbt;
 
 use crate::error::Error;
-use crate::types::{HWIChain, HWIDevice};
-use crate::HWIClient;
+use crate::types::{HWIChain, HWIClient, HWIDevice, HWIImplementation};
 
 use bdk_wallet::signer::{SignerCommon, SignerError, SignerId, TransactionSigner};
 
@@ -12,29 +11,29 @@ use bdk_wallet::signer::{SignerCommon, SignerError, SignerId, TransactionSigner}
 /// Custom signer for Hardware Wallets
 ///
 /// This ignores `sign_options` and leaves the decisions up to the hardware wallet.
-pub struct HWISigner {
+pub struct HWISigner<T: HWIImplementation> {
     fingerprint: Fingerprint,
-    client: HWIClient,
+    client: HWIClient<T>,
 }
 
-impl HWISigner {
+impl<T: HWIImplementation> HWISigner<T> {
     /// Create an instance from the specified device and chain
-    pub fn from_device(device: &HWIDevice, chain: HWIChain) -> Result<HWISigner, Error> {
-        let client = HWIClient::get_client(device, false, chain)?;
-        Ok(HWISigner {
+    pub fn from_device(device: &HWIDevice, chain: HWIChain) -> Result<Self, Error> {
+        let client = HWIClient::<T>::get_client(device, false, chain)?;
+        Ok(Self {
             fingerprint: device.fingerprint,
             client,
         })
     }
 }
 
-impl SignerCommon for HWISigner {
+impl<T: HWIImplementation> SignerCommon for HWISigner<T> {
     fn id(&self, _secp: &Secp256k1<All>) -> SignerId {
         SignerId::Fingerprint(self.fingerprint)
     }
 }
 
-impl TransactionSigner for HWISigner {
+impl<T: HWIImplementation> TransactionSigner for HWISigner<T> {
     fn sign_transaction(
         &self,
         psbt: &mut Psbt,
